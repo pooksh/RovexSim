@@ -41,3 +41,9 @@ TagManager:
   - name: Default
     uniqueID: 0
     locked: 0
+  - name: UI
+    uniqueID: 3987175625
+    locked: 0
+  - name: Hospital
+    uniqueID: 1516391741
+    locked: 0
