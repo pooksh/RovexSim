@@ -1,0 +1,2 @@
+entryTime,map,origin,destination
+00:00:00,testmap,0-0,0-0

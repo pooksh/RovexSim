@@ -6,7 +6,7 @@ using SimulationEvents;
 public abstract class Transporter : MonoBehaviour
 {
 
-    protected float speed;
+    [SerializeField] protected float speed;
     protected bool busy;
     protected bool available;
     protected Queue<SimulationEvents.Task> assignedTasks;

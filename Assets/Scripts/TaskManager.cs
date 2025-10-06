@@ -1,3 +1,4 @@
+using System.IO;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -16,13 +17,17 @@ public class TaskManager : MonoBehaviour
         // take tasks that are entered and not assigned and assign them
     assignmentAlgorithm algorithm;
 
+    public TextAsset inputTasks;
+    private string bigString;
+    private List<string> lines;
+    private List<string> variables;
+
     // Start is called before the first frame update
     void Start()
     {
         // import tasks from file
         ImportTasks();
         // get list of all gameobjects with transporter tag
-
         // set algorithm
         algorithm = FirstAvailableTransporter;
     }
@@ -34,7 +39,19 @@ public class TaskManager : MonoBehaviour
     }
 
     private void ImportTasks() {
-
+        taskMasterQueue = new Queue<SimulationEvents.Task>();
+        bigString = inputTasks.text;
+        lines = new List<string>();
+        variables = new List<string>();
+        lines.AddRange(bigString.Split("\n"));
+        for (int i = 1; i < lines.Count; i++) { // ignore first line
+            Debug.Log(lines[i]);
+            variables.AddRange(lines[i].Split(","));
+            taskMasterQueue.Enqueue(new SimulationEvents.Task(variables[0], variables[1], variables[2], variables[3]));
+        }
+        for (int i = 0; i < taskMasterQueue.Count; i++) {
+            Debug.Log(taskMasterQueue.Dequeue().DebugPrintVariables());
+        }
     }
 
     private void MakeTaskEntered(Task t) {

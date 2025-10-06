@@ -132,7 +132,6 @@ GameObject:
   m_Component:
   - component: {fileID: 253834952}
   - component: {fileID: 253834951}
-  - component: {fileID: 253834950}
   m_Layer: 0
   m_Name: GenericTransporter
   m_TagString: Untagged
@@ -140,18 +139,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &253834950
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 253834949}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 199df26ef01a7e944b4ea64ddc95888c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!212 &253834951
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -447,7 +434,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1953558502}
-  - component: {fileID: 1953558501}
+  - component: {fileID: 1953558503}
   m_Layer: 0
   m_Name: EventManager
   m_TagString: Untagged
@@ -455,18 +442,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1953558501
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1953558500}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 79c722ad335ed2f43a3dca0bd29cfc0c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!4 &1953558502
 Transform:
   m_ObjectHideFlags: 0
@@ -482,6 +457,19 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1953558503
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1953558500}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d8b2a65644387814e9d6f3077addf1f7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  inputTasks: {fileID: 4900000, guid: a1ab979605d397f439f0382479cc7bfb, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

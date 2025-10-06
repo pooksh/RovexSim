@@ -15,16 +15,18 @@ namespace SimulationEvents {
         protected bool isEntered; // can it be seen by transporters?
         protected bool isAssigned; // is it assigned to one particular transporter?
         protected bool isCompleted; // has the event completed?
-        // private Time entryTime;
-        // private Time startTime;
-        // private Time endTime; // arrival time in the case of task
+        private string entryTime;
+        private string startTime;
+        private string endTime; // arrival time in the case of task
+        // TEMPORARILY STRINGS ideally these would be a custome Time structure
 
         // this Time structure is temp beacuse we dont have the time simulation figured out yet. 
 
-        protected Event () {
+        protected Event (string entry) {
             isEntered = false;
             isAssigned = false;
             isCompleted = false;
+            entryTime = entry;
         }
 
         public void MarkEntered() { // to be called by manager
@@ -45,12 +47,20 @@ namespace SimulationEvents {
     {
 
         // transportation task
-        
-        // private origin
-        // private destination;
 
-        public Task () {
-            // implicit call to Event()
+        private string associatedMap; // Map
+        private string origin; // Coordinate
+        private string destination; // Coordinate
+        // TEMPORARILY STRINGS 
+
+        public Task (string entry, string map, string org, string des) : base(entry) {
+            associatedMap = map;
+            origin = org;
+            destination = des;
+        }
+
+        public string DebugPrintVariables() {
+            return "Map: " + associatedMap + ", Origin: " + origin + ", Destination: " + destination;
         }
 
     }
@@ -59,8 +69,8 @@ namespace SimulationEvents {
     {
         // transportation downtimes; when downtime is active, the transporter is disabled
 
-        public Downtime() {
-            // implicit call to Event()
+        public Downtime(string entry) : base(entry) {
+
         }
         
     }
