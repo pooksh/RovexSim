@@ -53,7 +53,7 @@ public class RoviTransporter : Transporter {
         //  handle downtime events (charging, maintenance, etc.)
         if (assignedDowntime.Count > 0) {
             Downtime downtime = assignedDowntime.Peek();
-            if (!downtime.isCompleted) {
+            if (!downtime.IsCompleted()) {
                 //  set state to charging or appropriate downtime state
                 SetMovementState(MovementState.Charging);
                 busy = true;
@@ -68,7 +68,7 @@ public class RoviTransporter : Transporter {
     public override void HandleTask() {
         if (assignedTasks.Count > 0) {
             Task currentTask = assignedTasks.Peek();
-            if (!currentTask.isCompleted) {
+            if (!currentTask.IsCompleted()) {
                 //  start moving to task origin first (to pick up stretcher)
                 MoveToDestination(currentTask.origin);
                 busy = true;
@@ -241,11 +241,9 @@ public class RoviTransporter : Transporter {
     private void HandleCurrentState() {
         //  handle state-specific update logic
         switch (currentState) {
-        {
             case MovementState.Idle:
                 //  check for new tasks
-                if (assignedTasks.Count > 0)
-                {
+                if (assignedTasks.Count > 0) {
                     HandleTask();
                 }
                 break;

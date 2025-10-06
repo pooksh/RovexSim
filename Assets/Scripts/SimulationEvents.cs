@@ -7,8 +7,7 @@ namespace SimulationEvents {
     // events and the inherited classes do not inherit from monobehaviour
     // because they are purely data stores. at least for now.
 
-    public abstract class Event
-    {
+    public abstract class Event {
 
         // generalized event
         
@@ -39,10 +38,13 @@ namespace SimulationEvents {
             isCompleted = true;
         }
 
+        public bool IsCompleted() {
+            return isCompleted;
+        }
+
     }
 
-    public class Task : Event
-    {
+    public class Task : Event {
         // Transportation task properties
         public Vector3 origin;                // Starting position for the task
         public Vector3 destination;           // Target destination for the task
@@ -57,8 +59,7 @@ namespace SimulationEvents {
         public float requestTime;             // When the task was requested
         public float deadline;                // When the task must be completed
         
-        public Task(Vector3 origin, Vector3 destination, string taskId = "", string description = "")
-        {
+        public Task(Vector3 origin, Vector3 destination, string taskId = "", string description = "") {
             this.origin = origin;
             this.destination = destination;
             this.taskId = taskId;
@@ -72,8 +73,7 @@ namespace SimulationEvents {
         }
         
         public Task(Vector3 origin, Vector3 destination, string taskId, string description, 
-                   float priority, float estimatedDuration, float loadingTime = 2f)
-        {
+                   float priority, float estimatedDuration, float loadingTime = 2f) {
             this.origin = origin;
             this.destination = destination;
             this.taskId = taskId;
@@ -87,24 +87,20 @@ namespace SimulationEvents {
         }
         
         // Utility methods
-        public float GetDistance()
-        {
+        public float GetDistance() {
             return Vector3.Distance(origin, destination);
         }
         
-        public bool IsOverdue()
-        {
+        public bool IsOverdue() {
             return Time.time > deadline;
         }
         
-        public float GetRemainingTime()
-        {
+        public float GetRemainingTime() {
             return deadline - Time.time;
         }
     }
 
-    public class Downtime : Event
-    {
+    public class Downtime : Event {
         // transportation downtimes; when downtime is active, the transporter is disabled
 
         public Downtime() {
