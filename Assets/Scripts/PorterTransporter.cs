@@ -4,19 +4,20 @@ using UnityEngine;
 using UnityEngine.AI;
 using SimulationEvents;
 
-public class RoviTransporter : Transporter {
-    [Header("AGV Movement Settings")]
-    [SerializeField] private float stoppingDistance = 0.5f;  // distance at which AGV considers destination reached
-    [SerializeField] private float rotationSpeed = 90f;      // degrees per second for rotation
+public class PorterTransporter : Transporter {
+    [Header("Porter Movement Settings")]
+    [SerializeField] private float stoppingDistance = 1.0f;  // distance at which porter considers destination reached (larger than AGV)
+    [SerializeField] private float rotationSpeed = 180f;     // degrees per second for rotation (faster than AGV)
     [SerializeField] private bool enableDebugLogs = true;    // enable debug logging for movement
+    [SerializeField] private float porterWalkingSpeed = 1.5f; // slower than AGV speed for realism. FIX later
     
     private Vector3 lastPosition;
     private float timeStopped;
-    private const float STOP_THRESHOLD = 0.1f;  // minimum movement to consider AGV moving
-    private const float STOP_TIME_THRESHOLD = 2f;   // time in seconds to consider AGV stopped
+    private const float STOP_THRESHOLD = 0.1f;  // minimum movement to consider porter moving
+    private const float STOP_TIME_THRESHOLD = 3f;   // time in seconds to consider porter stopped (longer than AGV)
 
-    public override void InitializeTransporter(float speed) { // speed may be a constant tho?
-        this.speed = speed;
+    public override void InitializeTransporter(float speed) {
+        this.speed = speed > 0 ? speed : porterWalkingSpeed;  // use provided speed or default porter speed
         this.busy = false;
         this.available = true;
         this.assignedTasks = new Queue<Task>();
@@ -34,33 +35,33 @@ public class RoviTransporter : Transporter {
         if (navAgent == null) {
             navAgent = gameObject.AddComponent<NavMeshAgent>();
             if (enableDebugLogs)
-                Debug.Log($"Added NavMeshAgent to Rovi {gameObject.name}");
+                Debug.Log($"Added NavMeshAgent to porter {gameObject.name}");
         }
         
-        //  configure NavMeshAgent settings
-        navAgent.speed = speed;
-        navAgent.acceleration = speed * 2f; 
+        // configure NavMeshAgent settings for porter movement
+        navAgent.speed = this.speed;
+        navAgent.acceleration = this.speed * 1.5f;  // slower acceleration than AGV
         navAgent.angularSpeed = rotationSpeed;
         navAgent.stoppingDistance = stoppingDistance;
         navAgent.autoBraking = true;
-        navAgent.avoidancePriority = 50;     // medium priority for hospital corridors
+        navAgent.avoidancePriority = 75;     // higher priority than AGVs (porters have right of way)
         
         if (enableDebugLogs)
-            Debug.Log($"Initialized RoviTransporter: {gameObject.name} with speed {speed}");
+            Debug.Log($"Initialized PorterTransporter: {gameObject.name} with speed {this.speed}");
     } 
 
     public override void HandleDowntime() {
-        //  handle downtime events (charging, maintenance, etc.)
+        // handle downtime events (breaks, shift changes, etc.)
         if (assignedDowntime.Count > 0) {
             Downtime downtime = assignedDowntime.Peek();
             if (!downtime.IsCompleted()) {
-                //  set state to charging or appropriate downtime state
+                // set state to charging or appropriate downtime state
                 SetMovementState(MovementState.Charging);
                 busy = true;
                 available = false;
                 
                 if (enableDebugLogs)
-                    Debug.Log($"{gameObject.name} is now in downtime");
+                    Debug.Log($"{gameObject.name} is now on break/downtime");
             }
         }
     }
@@ -69,7 +70,7 @@ public class RoviTransporter : Transporter {
         if (assignedTasks.Count > 0) {
             Task currentTask = assignedTasks.Peek();
             if (!currentTask.IsCompleted()) {
-                //  start moving to task origin first (to pick up stretcher)
+                // start moving to task origin first (to pick up stretcher)
                 MoveToDestination(currentTask.origin);
                 busy = true;
                 available = false;
@@ -87,14 +88,14 @@ public class RoviTransporter : Transporter {
             return;
         }
         
-        //  set destination and start moving
+        // set destination and start moving
         destination = targetPosition;
         navAgent.SetDestination(destination);
         isMoving = true;
         SetMovementState(MovementState.Moving);
         
         if (enableDebugLogs)
-            Debug.Log($"{gameObject.name} moving to {targetPosition}");
+            Debug.Log($"{gameObject.name} walking to {targetPosition}");
     }
     
     public override void StopMovement() {
@@ -125,13 +126,13 @@ public class RoviTransporter : Transporter {
             if (enableDebugLogs)
                 Debug.Log($"{gameObject.name} state changed: {previousState} -> {newState}");
             
-            //  handle state-specific logic
+            // handle state-specific logic
             OnStateChanged(previousState, newState);
         }
     }
     
     private void OnStateChanged(MovementState previousState, MovementState newState) {
-        //  handle state transition logic
+        // handle state transition logic
         switch (newState) {
             case MovementState.Idle:
                 busy = false;
@@ -142,11 +143,11 @@ public class RoviTransporter : Transporter {
                 available = false;
                 break;
             case MovementState.Arrived:
-                // AGV has reached destination, prepare for loading/unloading
+                // Porter has reached destination, prepare for loading/unloading
                 SetMovementState(MovementState.Loading);
                 break;
             case MovementState.Loading:
-                //  start loading/unloading process
+                // start loading/unloading process
                 StartCoroutine(LoadingSequence());
                 break;
             case MovementState.Charging:
@@ -159,33 +160,34 @@ public class RoviTransporter : Transporter {
     private IEnumerator LoadingSequence() {
         if (assignedTasks.Count > 0) {
             Task currentTask = assignedTasks.Peek();
-            float loadingTime = currentTask.requiresLoading ? currentTask.loadingTime : 0.5f;
+            // Porters may take longer for loading/unloading than AGVs. FIX later
+            float loadingTime = currentTask.requiresLoading ? currentTask.loadingTime * 1.5f : 3f;
             
-            //  check if we're at origin (picking up) or destination (dropping off)
+            // check if we're at origin (picking up) or destination (dropping off)
             float distanceToOrigin = Vector3.Distance(transform.position, currentTask.origin);
             float distanceToDestination = Vector3.Distance(transform.position, currentTask.destination);
             
             if (distanceToOrigin < distanceToDestination) {
-                //  we're at origin--picking up stretcher
+                // we're at origin--picking up stretcher
                 if (enableDebugLogs)
-                    Debug.Log($"{gameObject.name} picking up stretcher at origin for {loadingTime} seconds");
+                    Debug.Log($"{gameObject.name} manually loading stretcher at origin for {loadingTime} seconds");
                 
                 yield return new WaitForSeconds(loadingTime);
                 
-                //  now move to destination
+                // now move to destination
                 MoveToDestination(currentTask.destination);
                 
                 if (enableDebugLogs)
-                    Debug.Log($"{gameObject.name} picked up stretcher, moving to destination");
+                    Debug.Log($"{gameObject.name} loaded stretcher, walking to destination");
             }
             else {
-                //  we're at destination--dropping off stretcher
+                // we're at destination--dropping off stretcher
                 if (enableDebugLogs)
-                    Debug.Log($"{gameObject.name} dropping off stretcher at destination for {loadingTime} seconds");
+                    Debug.Log($"{gameObject.name} manually unloading stretcher at destination for {loadingTime} seconds");
                 
                 yield return new WaitForSeconds(loadingTime);
                 
-                //  task completed
+                // task completed
                 Task completedTask = assignedTasks.Dequeue();
                 completedTask.MarkCompleted();
                 
@@ -198,18 +200,18 @@ public class RoviTransporter : Transporter {
     }
 
     void Start() {
-        //  initialize with default speed if not set
+        // initialize with default porter speed if not set
         if (speed <= 0)
-            speed = 2f;
+            speed = porterWalkingSpeed;
             
         InitializeTransporter(speed);
     }
 
     void Update() {
-        //  update position tracking
+        // update position tracking
         UpdatePosition();
         
-        //  check if AGV has reached destination
+        // check if porter has reached destination
         if (isMoving && HasReachedDestination()) {
             isMoving = false;
             SetMovementState(MovementState.Arrived);
@@ -221,7 +223,7 @@ public class RoviTransporter : Transporter {
     }
     
     private void TrackMovement() {
-        //  track if AGV is actually moving
+        // track if porter is actually moving
         float distanceMoved = Vector3.Distance(transform.position, lastPosition);
         
         if (distanceMoved < STOP_THRESHOLD) {
@@ -239,23 +241,23 @@ public class RoviTransporter : Transporter {
     }
     
     private void HandleCurrentState() {
-        //  handle state-specific update logic
+        // handle state-specific update logic
         switch (currentState) {
             case MovementState.Idle:
-                //  check for new tasks
+                // check for new tasks
                 if (assignedTasks.Count > 0) {
                     HandleTask();
                 }
                 break;
             case MovementState.Charging:
-                //  handle charging logic
+                // handle break/downtime logic
                 HandleDowntime();
                 break;
         }
     }
     
     public void AssignNewTask(Vector3 origin, Vector3 destination, string taskId = "", string description = "") {
-        //  create and assign a new task
+        // create and assign a new task
         Task newTask = new Task(origin, destination, taskId, description);
         AddTask(newTask);
         
@@ -264,7 +266,7 @@ public class RoviTransporter : Transporter {
     }
     
     public void AssignNewTask(Task task) {
-        //  assign an existing task
+        // assign an existing task
         AddTask(task);
         
         if (enableDebugLogs)
@@ -288,7 +290,7 @@ public class RoviTransporter : Transporter {
     }
     
     public void EmergencyStop() {
-        //  emergency stop--immediately stop all movement and clear task queue
+        // emergency stop--immediately stop all movement and clear task queue
         StopMovement();
         assignedTasks.Clear();
         SetMovementState(MovementState.Idle);
@@ -296,5 +298,4 @@ public class RoviTransporter : Transporter {
         if (enableDebugLogs)
             Debug.Log($"{gameObject.name} EMERGENCY STOP activated");
     }
-
 }

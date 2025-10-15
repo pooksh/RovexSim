@@ -7,7 +7,7 @@ using SimulationEvents;
 // shows how to assign tasks to RoviTransporter AGVs
 public class AGVDemoController : MonoBehaviour
 {
-    [Header("Demo Settings")]
+    [Header("AGV Demo Settings")]
     [SerializeField] private RoviTransporter[] agvs;       
     [SerializeField] private Transform[] waypoints;     
     [SerializeField] private float demoTaskInterval = 10f;     // time between demo tasks
