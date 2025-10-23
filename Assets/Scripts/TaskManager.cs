@@ -12,8 +12,8 @@ public class TaskManager : MonoBehaviour
     private Queue<Task> orderedTasksMaster;
     private PriorityQueue<Task, float> enteredTasks;
     private List<Task> assignedTasks;
-    private List<Transporter> transportersMaster;
-    private LinkedList<Transporter> assignableTransporters;
+    private List<GameObject> transportersMaster;
+    private LinkedList<GameObject> assignableTransporters;
     
     public enum AssignmentAlgorithm { FirstAvailable, EarliestArrivalTime }   
     [SerializeField] private AssignmentAlgorithm assignAlg;
@@ -25,19 +25,25 @@ public class TaskManager : MonoBehaviour
     private List<string> lines;
     private List<string> variables;
 
+    LinkedListNode<GameObject> tempNode;
+
     void Start()
     {
-        ImportTasks();
-        transportersMaster = new List(GameObject.FindGameObjectsWithTag("Transporter"));
-        assignableTransporters = new LinkedList();
+        unorderedTasksMaster = new List<Task>();
+        orderedTasksMaster = new Queue<Task>();
+        enteredTasks = new PriorityQueue<Task,float>();
+        assignedTasks = new List<Task>();
+        transportersMaster = new List<GameObject>(GameObject.FindGameObjectsWithTag("Transporter"));
+        assignableTransporters = new LinkedList<GameObject>();
 
-        LinkedListNode<Transporter> tempNode = null;
-        foreach (Transporter porter in transportersMaster) { // every node is not busy and available at the start of the day
-            tempNode = assignableTransporters.AddLast(porter);
+        ImportTasks();
+
+        tempNode = null;
+        foreach (GameObject obj in transportersMaster) { // every node is not busy and available at the start of the day
+            Transporter porter = obj.GetComponent<Transporter>();
+            tempNode = assignableTransporters.AddLast(obj);
             porter.node = tempNode;
         }
-
-
 
         switch (assignAlg) {
             case AssignmentAlgorithm.FirstAvailable: currentAssignmentMethod = FirstAvailableNotBusyMethod; break;
@@ -48,10 +54,10 @@ public class TaskManager : MonoBehaviour
 
     private void ImportTasks()
     {
-        orderedTasksMaster = new Queue<Task>();
         bigString = inputTasks.text;
         lines = new List<string>();
         variables = new List<string>();     
+        lines.AddRange(bigString.Split("\n"));
 
         string map = lines[1];
         TimeOfDay entry;
@@ -66,7 +72,6 @@ public class TaskManager : MonoBehaviour
         float x, z; // TODO : change to x,y when axis updated
         List<string> coordinatesList = new List<string>();
 
-        lines.AddRange(bigString.Split("\n"));
         for (int i = 3; i < lines.Count; i++) { // ignore first three lines
 
             // TODO: add checks for parsing errors ughh
@@ -93,7 +98,10 @@ public class TaskManager : MonoBehaviour
             priority = float.Parse(variables[5]);
             estDuration = float.Parse(variables[6]);
             loadingTime = float.Parse(variables[7]);
-            unorderedTasksMaster.Add(new Task(map, entry, origin, destination, taskID, description, priority, estDuration,loadingTime));
+            
+            // Debug.Log(map + ", " + entry + ", " + origin + ", " + destination + ", " + taskID + ", " + description + ", " + priority + ", " + estDuration + ", " + loadingTime);
+
+            unorderedTasksMaster.Add(new Task(map, entry, origin, destination, taskID, description, priority, estDuration, loadingTime));
         }
 
         orderedTasksMaster = new Queue<Task>(unorderedTasksMaster.OrderBy(item => item.EntryTime));
@@ -103,14 +111,14 @@ public class TaskManager : MonoBehaviour
     public void UpdateManager(TimeOfDay currentTime)  // called by time sim every tick
     {
         // update the list of available transporters
-        foreach (Transporter porter in transportersMaster) {
-
+        foreach (GameObject obj in transportersMaster) {
+            Transporter porter = obj.GetComponent<Transporter>();
             if (!porter.available && porter.node != null && porter.node.List == assignableTransporters) {
                 assignableTransporters.Remove(porter.node);
                 porter.node = null;
             }
             else if (porter.available && porter.node == null) {
-                tempNode = assignableTransporters.AddLast(porter);
+                tempNode = assignableTransporters.AddLast(obj);
                 porter.node = tempNode;
             }
         
@@ -144,7 +152,8 @@ public class TaskManager : MonoBehaviour
 
     private void FirstAvailableNotBusyMethod()
     {
-        foreach (Transporter porter in assignableTransporters) {
+        foreach (GameObject obj in assignableTransporters) {
+            Transporter porter = obj.GetComponent<Transporter>();
             if (!porter.busy) {
                 AssignTask(enteredTasks.Dequeue(), porter);
             }

@@ -7,8 +7,8 @@ using SimulationEvents;
 public abstract class Transporter : MonoBehaviour {
 
     [SerializeField] protected float speed;
-    protected bool busy;
-    protected bool available;
+    public bool busy;
+    public bool available;
     protected Queue<SimulationEvents.Task> assignedTasks;
     protected Queue<SimulationEvents.Downtime> assignedDowntime;
     
@@ -17,7 +17,7 @@ public abstract class Transporter : MonoBehaviour {
     protected bool isMoving;  
     protected NavMeshAgent navAgent;    // unity NavMeshAgent for pathfinding
     
-    public LinkedListNode<Transporter> node; // a pointer to my spot in the linked list of available / not busy transporters for O(1) access/deletion
+    public LinkedListNode<GameObject> node; // a pointer to my spot in the linked list of available / not busy transporters for O(1) access/deletion
 
     // navmesh logic is blackbox so we may see limitations in using this. we can start w/ it and see where/if it breaks
     

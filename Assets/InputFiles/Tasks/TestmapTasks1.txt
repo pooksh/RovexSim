@@ -1,5 +1,5 @@
 mapname
 TestMap
 entryTime,origin,destination,id,description,priority,estimatedDuration,loadingTime
-00:00,0.1,0.3,"lol-1","test task priority 1",1,60,4
-03:40,0.-2,0.4,"lol-2","test task priority 2",2,60,4
+00:00,0;1,0;3,"lol-1","test task priority 1",1,60,4
+03:40,0;-2,0;4,"lol-2","test task priority 2",2,60,4
