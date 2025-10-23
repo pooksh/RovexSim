@@ -79,6 +79,11 @@ public class TaskManager : MonoBehaviour
             // use ';' to separate coordinates
 
             Debug.Log(lines[i]);
+            Debug.Log(lines[i].Length);
+            if (lines[i].Length == 0) { // TODO: check if whitespace character
+                break;
+            }
+
             variables.AddRange(lines[i].Split(","));
             entry = new TimeOfDay(variables[0]);
             coordinatesList.Clear();
@@ -110,6 +115,8 @@ public class TaskManager : MonoBehaviour
 
     public void UpdateManager(TimeOfDay currentTime)  // called by time sim every tick
     {
+        Debug.Log("Tick called");
+
         // update the list of available transporters
         foreach (GameObject obj in transportersMaster) {
             Transporter porter = obj.GetComponent<Transporter>();
@@ -129,12 +136,17 @@ public class TaskManager : MonoBehaviour
         // only implement this if task priorities change throughout simulation
 
         // make tasks entered
-        Task currTask = orderedTasksMaster.Peek();
-        while (currTask.EntryTime == currentTime) {
-            currTask.MarkEntered();
-            enteredTasks.Enqueue(currTask, currTask.priority); 
-            orderedTasksMaster.Dequeue();
-            currTask = orderedTasksMaster.Peek();
+        if (orderedTasksMaster.Count() != 0) {
+            Task currTask = orderedTasksMaster.Peek();
+            while (currTask.EntryTime == currentTime) {
+                currTask.MarkEntered();
+                enteredTasks.Enqueue(currTask, currTask.priority); 
+                orderedTasksMaster.Dequeue();
+                currTask = orderedTasksMaster.Peek();
+            }
+        }
+        else {
+            Debug.Log("there are no tasks to enter");
         }
 
         // mark tasks assigned
@@ -152,13 +164,22 @@ public class TaskManager : MonoBehaviour
 
     private void FirstAvailableNotBusyMethod()
     {
-        foreach (GameObject obj in assignableTransporters) {
-            Transporter porter = obj.GetComponent<Transporter>();
-            if (!porter.busy) {
-                AssignTask(enteredTasks.Dequeue(), porter);
-            }
+        if (enteredTasks.Count == 0) {
+            Debug.Log("there are no currently entered tasks");
+            return;
         }
 
+        if (assignableTransporters.Count != 0) {
+            foreach (GameObject obj in assignableTransporters) {
+                Transporter porter = obj.GetComponent<Transporter>();
+                if (!porter.busy) {
+                    AssignTask(enteredTasks.Dequeue(), porter);
+                }
+            }
+        }
+        else {
+            Debug.Log("there are no currently assignable transporters");
+        }
     }
     
     private void EarliestArrivalTimeMethod()

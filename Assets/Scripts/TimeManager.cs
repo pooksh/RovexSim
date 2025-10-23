@@ -41,8 +41,6 @@ public class TimeSimulation : MonoBehaviour
 
     void Update() // TODO: needs time warping / pausing / restarting functionality
     {           
-        timer += Time.deltaTime;
-
         if (timer >= incrementThreshold && !simulationComplete) {
             incrementThreshold += simulationTick;
             currentTime.IncrementTimeByMinutues(clockTick);
@@ -53,6 +51,9 @@ public class TimeSimulation : MonoBehaviour
         if (timer >= simulationDuration && !simulationComplete) {
             simulationComplete = true;
         }
+
+        timer += Time.deltaTime;
+
     }
 
 
