@@ -66,9 +66,60 @@ public class TransportationComparisonController : MonoBehaviour
     
     private void AssignComparisonTask() {
         // create a task between two waypoints
+        Vector3 origin = waypoints[currentWaypointIndex].position;
+        Vector3 destination = waypoints[(currentWaypointIndex + 1) % waypoints.Length].position;
+        
+        string taskId = $"ComparisonTask_{taskCounter++}";
+        string description = $"Transport comparison from waypoint {currentWaypointIndex} to {(currentWaypointIndex + 1) % waypoints.Length}";
+        
+        // determine which system to assign to
+        string assignedSystem = DetermineAssignmentSystem();
+        
+        if (assignedSystem == "AGV") {
+            RoviTransporter availableAGV = GetAvailableAGV();
+            if (availableAGV != null) {
+                availableAGV.AssignNewTask(origin, destination, taskId + "_AGV", description + " (AGV)");
+                Debug.Log($"Assigned {taskId} to AGV: {availableAGV.gameObject.name}");
+            }
+            else {
+                Debug.Log("No available AGVs, task skipped");
+            }
+        }
+        else if (assignedSystem == "Porter") {
+            PorterTransporter availablePorter = GetAvailablePorter();
+            if (availablePorter != null) {
+                availablePorter.AssignNewTask(origin, destination, taskId + "_Porter", description + " (Porter)");
+                Debug.Log($"Assigned {taskId} to Porter: {availablePorter.gameObject.name}");
+            }
+            else {
+                Debug.Log("No available porters, task skipped");
+            }
+        }
+        
+        // move to next waypoint for next task
+        currentWaypointIndex = (currentWaypointIndex + 1) % waypoints.Length;
     }
     
     private string DetermineAssignmentSystem() {
+        if (alternateAssignment) {
+            // alternate between AGV and Porter
+            lastAssignedToAGV = !lastAssignedToAGV;
+            return lastAssignedToAGV ? "AGV" : "Porter";
+        }
+        else if (randomAssignment) {
+            // random assignment
+            return Random.Range(0, 2) == 0 ? "AGV" : "Porter";
+        }
+        else if (agvPriority) {
+            // prefer AGV, fallback to Porter
+            if (GetAvailableAGV() != null) return "AGV";
+            else return "Porter";
+        }
+        else {
+            // prefer Porter, fallback to AGV
+            if (GetAvailablePorter() != null) return "Porter";
+            else return "AGV";
+        }
     }
     
     private RoviTransporter GetAvailableAGV() {
@@ -129,12 +180,114 @@ public class TransportationComparisonController : MonoBehaviour
         }
     }
     
-    private void ToggleAssignmentStrategy() {
+    private void AssignTaskToWaypoints(int originIndex, int destinationIndex, string system) {
+        if (waypoints.Length > Mathf.Max(originIndex, destinationIndex)) {
+            Vector3 origin = waypoints[originIndex].position;
+            Vector3 destination = waypoints[destinationIndex].position;
+            string taskId = $"ManualTask_{taskCounter++}";
+            
+            if (system == "AGV") {
+                RoviTransporter availableAGV = GetAvailableAGV();
+                if (availableAGV != null) {
+                    availableAGV.AssignNewTask(origin, destination, taskId, $"Manual AGV task from WP{originIndex} to WP{destinationIndex}");
+                    Debug.Log($"Manual AGV task assigned: {taskId}");
+                }
+                else {
+                    Debug.Log("No available AGVs for manual task");
+                }
+            }
+            else if (system == "Porter") {
+                PorterTransporter availablePorter = GetAvailablePorter();
+                if (availablePorter != null) {
+                    availablePorter.AssignNewTask(origin, destination, taskId, $"Manual porter task from WP{originIndex} to WP{destinationIndex}");
+                    Debug.Log($"Manual porter task assigned: {taskId}");
+                }
+                else {
+                    Debug.Log("No available porters for manual task");
+                }
+            }
+        }
     }
     
-    private void AssignTaskToWaypoints(int originIndex, int destinationIndex, string system) {
+    private void ToggleAssignmentStrategy() {
+        if (alternateAssignment) {
+            alternateAssignment = false;
+            randomAssignment = true;
+            Debug.Log("Assignment strategy: Random");
+        }
+        else if (randomAssignment) {
+            randomAssignment = false;
+            agvPriority = true;
+            Debug.Log("Assignment strategy: AGV Priority");
+        }
+        else if (agvPriority) {
+            agvPriority = false;
+            alternateAssignment = true;
+            Debug.Log("Assignment strategy: Alternate");
+        }
     }
     
     void OnGUI() {
-
+        if (!showDebugInfo) return;
+        
+        // AGV Fleet Status
+        GUILayout.BeginArea(new Rect(10, 10, 400, 200));
+        GUILayout.Label("AGV Fleet Status", GUI.skin.box);
+        
+        GUILayout.Label($"AGVs in fleet: {agvs.Length}");
+        
+        for (int i = 0; i < Mathf.Min(agvs.Length, 3); i++) { // limit display to first 3 AGVs
+            if (agvs[i] != null) {
+                RoviTransporter agv = agvs[i];
+                GUILayout.Label($"{agv.gameObject.name}: {agv.GetCurrentState()} (Available: {agv.IsAvailable()})");
+            }
+        }
+        GUILayout.EndArea();
+        
+        // Porter Fleet Status
+        GUILayout.BeginArea(new Rect(10, 220, 400, 200));
+        GUILayout.Label("Porter Fleet Status", GUI.skin.box);
+        
+        GUILayout.Label($"Porters in fleet: {porters.Length}");
+        
+        for (int i = 0; i < Mathf.Min(porters.Length, 3); i++) { // limit display to first 3 porters
+            if (porters[i] != null) {
+                PorterTransporter porter = porters[i];
+                GUILayout.Label($"{porter.gameObject.name}: {porter.GetCurrentState()} (Available: {porter.IsAvailable()})");
+            }
+        }
+        GUILayout.EndArea();
+        
+        // Comparison Statistics and Controls
+        GUILayout.BeginArea(new Rect(420, 10, 350, 400));
+        GUILayout.Label("Transportation Comparison", GUI.skin.box);
+        
+        GUILayout.Label("Assignment Strategy:");
+        if (alternateAssignment) GUILayout.Label("  Alternate");
+        else if (randomAssignment) GUILayout.Label("  Random");
+        else if (agvPriority) GUILayout.Label("  AGV Priority");
+        
+        GUILayout.Space(10);
+        GUILayout.Label("Controls:");
+        GUILayout.Label("1, 2, 3 - Manual AGV tasks");
+        GUILayout.Label("Q, W, R - Manual Porter tasks");
+        GUILayout.Label("E - Emergency stop all");
+        GUILayout.Label("Space - Toggle assignment strategy");
+        
+        if (showComparisonStats) {
+            GUILayout.Space(10);
+            GUILayout.Label("Statistics:");
+            GUILayout.Label($"AGV Tasks Completed: {agvTasksCompleted}");
+            GUILayout.Label($"Porter Tasks Completed: {porterTasksCompleted}");
+            
+            if (agvTasksCompleted > 0) {
+                GUILayout.Label($"AGV Avg Time: {agvTotalTime / agvTasksCompleted:F1}s");
+            }
+            if (porterTasksCompleted > 0) {
+                GUILayout.Label($"Porter Avg Time: {porterTotalTime / porterTasksCompleted:F1}s");
+            }
+        }
+        
+        GUILayout.EndArea();
+    }
 }
