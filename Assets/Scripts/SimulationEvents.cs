@@ -14,58 +14,34 @@ namespace SimulationEvents {
         protected bool isEntered; // can it be seen by transporters?
         protected bool isAssigned; // is it assigned to one particular transporter?
         protected bool isCompleted; // has the event completed?
-        private string entryTime;
-        private string startTime;
-        private string endTime; // arrival time in the case of task
-        // TEMPORARILY STRINGS ideally these would be a custome Time structure
+        protected TimeOfDay entryTime;
+        protected TimeOfDay startTime;
+        protected TimeOfDay endTime { get; private set; } // arrival time in the case of task
+        protected string associatedMap;
 
-        // this Time structure is temp beacuse we dont have the time simulation figured out yet. 
-
-        protected Event (string entry) {
+        protected Event () {
             isEntered = false;
             isAssigned = false;
             isCompleted = false;
-            entryTime = entry;
         }
 
         public void MarkEntered() { // to be called by manager
             isEntered = true;
         }
 
-        public void MarkAssigned() { // to be called by transporter
+        public void MarkAssigned() { // to be called by manager
             isAssigned = true;
         }
 
-        public void MarkCompleted() {
+        public void MarkCompleted() { // to be called by transporter
             isCompleted = true;
         }
 
-<<<<<<< HEAD
-    }
-
-    public class Task : Event
-    {
-
-        // transportation task
-
-        private string associatedMap; // Map
-        private string origin; // Coordinate
-        private string destination; // Coordinate
-        // TEMPORARILY STRINGS 
-
-        public Task (string entry, string map, string org, string des) : base(entry) {
-            associatedMap = map;
-            origin = org;
-            destination = des;
-        }
-
-        public string DebugPrintVariables() {
-            return "Map: " + associatedMap + ", Origin: " + origin + ", Destination: " + destination;
-=======
         public bool IsCompleted() {
             return isCompleted;
->>>>>>> AGVmovement
         }
+
+        public TimeOfDay EntryTime => entryTime; // public getter
 
     }
 
@@ -84,7 +60,9 @@ namespace SimulationEvents {
         public float requestTime;             // When the task was requested
         public float deadline;                // When the task must be completed
         
-        public Task(Vector3 origin, Vector3 destination, string taskId = "", string description = "") {
+        public Task(string associatedMap, TimeOfDay entryTime, Vector3 origin, Vector3 destination, string taskId = "", string description = "") {
+            this.associatedMap = associatedMap;
+            this.entryTime = entryTime;
             this.origin = origin;
             this.destination = destination;
             this.taskId = taskId;
@@ -97,8 +75,10 @@ namespace SimulationEvents {
             this.deadline = requestTime + estimatedDuration;
         }
         
-        public Task(Vector3 origin, Vector3 destination, string taskId, string description, 
+        public Task(string associatedMap, TimeOfDay entryTime, Vector3 origin, Vector3 destination, string taskId, string description, 
                    float priority, float estimatedDuration, float loadingTime = 2f) {
+            this.associatedMap = associatedMap;
+            this.entryTime = entryTime;
             this.origin = origin;
             this.destination = destination;
             this.taskId = taskId;
@@ -123,12 +103,17 @@ namespace SimulationEvents {
         public float GetRemainingTime() {
             return deadline - Time.time;
         }
+        
+        public string SmallDebugPrintVariables() {
+            return "Map: " + associatedMap + ", Origin: " + origin + ", Destination: " + destination;
+        }
+
     }
 
     public class Downtime : Event {
         // transportation downtimes; when downtime is active, the transporter is disabled
 
-        public Downtime(string entry) : base(entry) {
+        public Downtime() {
 
         }
         
