@@ -13,6 +13,7 @@ public class TransportationComparisonController : MonoBehaviour
     [SerializeField] private Transform[] waypoints;     
     [SerializeField] private float demoTaskInterval = 8f;   // time between demo tasks
     [SerializeField] private bool autoStartDemo = true; // start demo automatically
+    [SerializeField] private int activeAGVCount = 1;        // number of AGVs active (1-3)
     
     [Header("Task Assignment Strategy")]
     [SerializeField] private bool alternateAssignment = true;   // alternate between AGV and Porter
@@ -44,6 +45,12 @@ public class TransportationComparisonController : MonoBehaviour
             Debug.Log($"Found {porters.Length} porters in scene");
         }
         
+        //  ensure activeAGVCount is within valid range (1-3)
+        activeAGVCount = Mathf.Clamp(activeAGVCount, 1, 3);
+        
+        //  initialize AGV active states
+        UpdateActiveAGVs();
+        
         if (autoStartDemo) {
             StartCoroutine(DemoTaskLoop());
         }
@@ -52,6 +59,17 @@ public class TransportationComparisonController : MonoBehaviour
     void Update() {
         // handle manual task assignment with keyboard
         HandleKeyboardInput();
+        
+        //  handle active AGV count changes via keyboard
+        if (Input.GetKeyDown(KeyCode.Keypad1)) {
+            SetActiveAGVCount(1);
+        }
+        else if (Input.GetKeyDown(KeyCode.Keypad2)) {
+            SetActiveAGVCount(2);
+        }
+        else if (Input.GetKeyDown(KeyCode.Keypad3)) {
+            SetActiveAGVCount(3);
+        }
     }
     
     private IEnumerator DemoTaskLoop() {
@@ -123,12 +141,28 @@ public class TransportationComparisonController : MonoBehaviour
     }
     
     private RoviTransporter GetAvailableAGV() {
-        foreach (RoviTransporter agv in agvs) {
-            if (agv != null && agv.IsAvailable()) {
-                return agv;
+        // only check active AGVs
+        for (int i = 0; i < agvs.Length && i < activeAGVCount; i++) {
+            if (agvs[i] != null && agvs[i].IsAvailable()) {
+                return agvs[i];
             }
         }
         return null;
+    }
+    
+    private void SetActiveAGVCount(int count) {
+        activeAGVCount = Mathf.Clamp(count, 1, Mathf.Min(3, agvs.Length));
+        UpdateActiveAGVs();
+        Debug.Log($"Active AGV count set to {activeAGVCount}");
+    }
+    
+    private void UpdateActiveAGVs() {
+        //  enable/disable AGVs based on active count
+        for (int i = 0; i < agvs.Length; i++) {
+            if (agvs[i] != null) {
+                agvs[i].gameObject.SetActive(i < activeAGVCount);
+            }
+        }
     }
     
     private PorterTransporter GetAvailablePorter() {
@@ -231,12 +265,27 @@ public class TransportationComparisonController : MonoBehaviour
         if (!showDebugInfo) return;
         
         // AGV Fleet Status
-        GUILayout.BeginArea(new Rect(10, 10, 400, 200));
+        GUILayout.BeginArea(new Rect(10, 10, 400, 250));
         GUILayout.Label("AGV Fleet Status", GUI.skin.box);
         
         GUILayout.Label($"AGVs in fleet: {agvs.Length}");
+        GUILayout.Label($"Active AGVs: {activeAGVCount}/3");
         
-        for (int i = 0; i < Mathf.Min(agvs.Length, 3); i++) { // limit display to first 3 AGVs
+        //  active AGV count controls
+        GUILayout.BeginHorizontal();
+        if (GUILayout.Button($"1 AGV", activeAGVCount == 1 ? GUI.skin.box : GUI.skin.button)) {
+            SetActiveAGVCount(1);
+        }
+        if (GUILayout.Button($"2 AGVs", activeAGVCount == 2 ? GUI.skin.box : GUI.skin.button)) {
+            SetActiveAGVCount(2);
+        }
+        if (GUILayout.Button($"3 AGVs", activeAGVCount == 3 ? GUI.skin.box : GUI.skin.button)) {
+            SetActiveAGVCount(3);
+        }
+        GUILayout.EndHorizontal();
+        GUILayout.Space(5);
+        
+        for (int i = 0; i < Mathf.Min(agvs.Length, activeAGVCount); i++) {
             if (agvs[i] != null) {
                 RoviTransporter agv = agvs[i];
                 GUILayout.Label($"{agv.gameObject.name}: {agv.GetCurrentState()} (Available: {agv.IsAvailable()})");
@@ -245,7 +294,7 @@ public class TransportationComparisonController : MonoBehaviour
         GUILayout.EndArea();
         
         // Porter Fleet Status
-        GUILayout.BeginArea(new Rect(10, 220, 400, 200));
+        GUILayout.BeginArea(new Rect(10, 270, 400, 200));
         GUILayout.Label("Porter Fleet Status", GUI.skin.box);
         
         GUILayout.Label($"Porters in fleet: {porters.Length}");
@@ -259,7 +308,7 @@ public class TransportationComparisonController : MonoBehaviour
         GUILayout.EndArea();
         
         // Comparison Statistics and Controls
-        GUILayout.BeginArea(new Rect(420, 10, 350, 400));
+        GUILayout.BeginArea(new Rect(420, 10, 350, 450));
         GUILayout.Label("Transportation Comparison", GUI.skin.box);
         
         GUILayout.Label("Assignment Strategy:");
@@ -271,6 +320,7 @@ public class TransportationComparisonController : MonoBehaviour
         GUILayout.Label("Controls:");
         GUILayout.Label("1, 2, 3 - Manual AGV tasks");
         GUILayout.Label("Q, W, R - Manual Porter tasks");
+        GUILayout.Label("Keypad 1, 2, 3 - Set active AGVs");
         GUILayout.Label("E - Emergency stop all");
         GUILayout.Label("Space - Toggle assignment strategy");
         

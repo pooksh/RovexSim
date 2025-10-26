@@ -291,10 +291,14 @@ public class RoviTransporter : Transporter {
         //  emergency stop--immediately stop all movement and clear task queue
         StopMovement();
         assignedTasks.Clear();
+        
+        //  reset availability state; CHECK: do we want to stop completely or just reset the queue?
+        busy = false;
+        available = true;
         SetMovementState(MovementState.Idle);
         
         if (enableDebugLogs)
-            Debug.Log($"{gameObject.name} EMERGENCY STOP activated");
+            Debug.Log($"{gameObject.name} EMERGENCY STOP activated - ready for new tasks");
     }
 
 }
