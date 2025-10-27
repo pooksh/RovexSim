@@ -59,7 +59,7 @@ public class AGVDemoController : MonoBehaviour
             string description = $"Transport from waypoint {currentWaypointIndex} to {(currentWaypointIndex + 1) % waypoints.Length}";
             
             //  assign the task
-            availableAGV.AssignNewTask(origin, destination, taskId, description);
+            availableAGV.AssignNewTask("waypoints", new TimeOfDay(0,0), origin, destination, taskId, description);
             
             //  move to next waypoint for next task
             currentWaypointIndex = (currentWaypointIndex + 1) % waypoints.Length;
@@ -111,7 +111,7 @@ public class AGVDemoController : MonoBehaviour
                 Vector3 destination = waypoints[destinationIndex].position;
                 string taskId = $"ManualTask_{taskCounter++}";
                 
-                availableAGV.AssignNewTask(origin, destination, taskId, $"Manual task from WP{originIndex} to WP{destinationIndex}");
+                availableAGV.AssignNewTask("waypoints", new TimeOfDay(0,0), origin, destination, taskId, $"Manual task from WP{originIndex} to WP{destinationIndex}");
                 Debug.Log($"Manual task assigned: {taskId}");
             }
             else {

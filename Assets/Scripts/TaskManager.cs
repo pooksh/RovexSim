@@ -1,56 +1,223 @@
+using System;
+using System.IO;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using SimulationEvents;
+using Utils; // priority queue port
 
 public class TaskManager : MonoBehaviour
 {
-    // what does the task manager do?
-    // takes in a file of tasks (sorted by chronological time) into a queue
-    // makes tasks "entered" to transporters at particular times of the day // isEntered;
+    private List<Task> unorderedTasksMaster;
+    private Queue<Task> orderedTasksMaster;
+    private PriorityQueue<Task, float> enteredTasks;
+    private List<Task> assignedTasks;
+    private List<GameObject> transportersMaster;
+    private LinkedList<GameObject> assignableTransporters;
+    
+    public enum AssignmentAlgorithm { FirstAvailable, EarliestArrivalTime }   
+    [SerializeField] private AssignmentAlgorithm assignAlg;
+    private delegate void ChosenAlgorithm();
+    ChosenAlgorithm currentAssignmentMethod;
 
-    // need a list of all tasks
-    public Queue<SimulationEvents.Task> taskMasterQueue;
+    [SerializeField] private TextAsset inputTasks;
+    private string bigString;
+    private List<string> lines;
+    private List<string> variables;
 
-    delegate void assignmentAlgorithm(); // task assignment algorithm
-        // take tasks that are entered and not assigned and assign them
-    assignmentAlgorithm algorithm;
+    LinkedListNode<GameObject> tempNode;
 
-    // Start is called before the first frame update
+    string map;
+    TimeOfDay entry;
+    Vector3 origin;
+    Vector3 destination;
+    string taskID;
+    string description;
+    float priority;
+    float estDuration;
+    float loadingTime;
+    List<string> coordinatesList;
+    Task newtask;
+
+
     void Start()
     {
-        // import tasks from file
+        unorderedTasksMaster = new List<Task>();
+        orderedTasksMaster = new Queue<Task>();
+        enteredTasks = new PriorityQueue<Task,float>();
+        assignedTasks = new List<Task>();
+        transportersMaster = new List<GameObject>(GameObject.FindGameObjectsWithTag("Transporter"));
+        assignableTransporters = new LinkedList<GameObject>();
+
         ImportTasks();
-        // get list of all gameobjects with transporter tag
 
-        // set algorithm
-        algorithm = FirstAvailableTransporter;
+        tempNode = null;
+        foreach (GameObject obj in transportersMaster) { // every node is not busy and available at the start of the day
+            Transporter porter = obj.GetComponent<Transporter>();
+            tempNode = assignableTransporters.AddLast(obj);
+            porter.Node = tempNode;
+        }
+
+        switch (assignAlg) {
+            case AssignmentAlgorithm.FirstAvailable: currentAssignmentMethod = FirstAvailableNotBusyMethod; break;
+            case AssignmentAlgorithm.EarliestArrivalTime: currentAssignmentMethod = EarliestArrivalTimeMethod; break;
+        }
+
     }
 
-    // Update is called once per frame
-    void Update()
+    private void ImportTasks()
     {
+        bigString = inputTasks.text;
+        lines = new List<string>();
+        variables = new List<string>();     
+        lines.AddRange(bigString.Split("\n"));
+
+        map = lines[1];
+        Debug.Log(map);
+
+        float x, z; // TODO : change to x,y when axis updated
+        coordinatesList = new List<string>();
+
+        for (int i = 3; i < lines.Count; i++) { // ignore first three lines
+
+            // TODO: add checks for parsing errors ughh
+            // right now dont add ',' in descriptions
+            // use ';' to separate coordinates
+
+
+            if (String.IsNullOrWhiteSpace(lines[i]) || lines[i].Length == 0) {
+                break;
+            }
+
+            Debug.Log(lines[i]);
+            variables.Clear();
+            variables.AddRange(lines[i].Split(","));
+
+            entry = new TimeOfDay(variables[0]);
+            coordinatesList.Clear();
+            coordinatesList.AddRange(variables[1].Split(";"));
+            x = float.Parse(coordinatesList[0]);
+            z = float.Parse(coordinatesList[1]);
+            // TODO : change to x,y when axis updated
+            origin = new Vector3(x,0,z);
+            coordinatesList.Clear();
+            coordinatesList.AddRange(variables[2].Split(";"));
+            x = float.Parse(coordinatesList[0]);
+            z = float.Parse(coordinatesList[1]);
+            // TODO : change to x,y when axis updated
+            destination = new Vector3(x,0,z);
+
+            taskID = variables[3];
+            description = variables[4];
+            priority = float.Parse(variables[5]);
+            estDuration = float.Parse(variables[6]);
+            loadingTime = float.Parse(variables[7]);
+            
+            // Debug.Log(map + ", "+ entry.StringTime() + ", "+ origin + ", "+ destination + ", "+ taskID + ", "+ description + ", "+ priority + ", "+ estDuration + ", "+ loadingTime);
+
+            newtask = new Task(map, entry, origin, destination, taskID, description, priority, estDuration, loadingTime);
+            // newtask.DebugPrintVariables();
+
+            Debug.Log("import task: " + (i-3));
+            unorderedTasksMaster.Add(newtask);
+        }
+
+        orderedTasksMaster = new Queue<Task>(unorderedTasksMaster.OrderBy(item => item.EntryTime));
         
-    }
+        foreach (Task t in unorderedTasksMaster) {
+            t.SmallDebugPrintVariables();
+        }
 
-    private void ImportTasks() {
-
-    }
-
-    private void MakeTaskEntered(Task t) {
-        // a good thing to note is that C# passes by reference,
-        // so we don't need to worry about data consistency across
-        // each individual transporter's list of taks and
-        // the main tasklist
+        foreach (Task t in orderedTasksMaster) {
+            t.SmallDebugPrintVariables();
+        }
 
     }
 
-    void FirstAvailableTransporter() {
+    public void UpdateManager(TimeOfDay currentTime)  // called by time sim every tick
+    {
+        Debug.Log("Tick called at " + currentTime.StringTime());
 
+        // update the list of available transporters
+        foreach (GameObject obj in transportersMaster) {
+            Transporter porter = obj.GetComponent<Transporter>();
+            if (!porter.IsAvailable() && porter.Node != null && porter.Node.List == assignableTransporters) {
+                assignableTransporters.Remove(porter.Node);
+                porter.Node = null;
+            }
+            else if (porter.available && porter.Node == null) {
+                tempNode = assignableTransporters.AddLast(obj);
+                porter.Node = tempNode;
+            }
+        
+        }
+
+        // TODO: update task priority queue (rebuild)
+        // clear the task priority queue if any changes were made to any task priority and 
+        // only implement this if task priorities change throughout simulation
+
+        // make tasks entered
+        if (orderedTasksMaster.Count() != 0) {
+            Task currTask = orderedTasksMaster.Peek();
+            while (currTask.EntryTime == currentTime) {
+                currTask.MarkEntered();
+                enteredTasks.Enqueue(currTask, currTask.priority); 
+                orderedTasksMaster.Dequeue();
+                if (orderedTasksMaster.Count() == 0) {
+                    break;
+                }
+                currTask = orderedTasksMaster.Peek();
+            }
+        }
+        else {
+            Debug.Log("there are no tasks to enter");
+        }
+
+        // mark tasks assigned
+       currentAssignmentMethod();
+       
+       //  tasks are marked completed by transporter. we may need to sync to tick later - not sure
+
+    }
+
+    // take tasks that are entered and not assigned and assign them to an available transporter
+    // every assignment algorithm should:
+    // - go through list of entered tasks
+    // - find a transporter to assign the task
+    // - assign the task to the transporter, mark assigned, add to assigned tasklist
+
+    private void FirstAvailableNotBusyMethod()
+    {
+        if (enteredTasks.Count == 0) {
+            Debug.Log("there are no currently entered tasks");
+            return;
+        }
+
+        if (assignableTransporters.Count != 0) {
+            foreach (GameObject obj in assignableTransporters) {
+                Transporter porter = obj.GetComponent<Transporter>();
+                if (!porter.busy && enteredTasks.Count != 0) {
+                    AssignTask(enteredTasks.Dequeue(), porter);
+                }
+            }
+        }
+        else {
+            Debug.Log("there are no currently assignable transporters");
+        }
     }
     
-    void EarliestArrivalTime() {
+    private void EarliestArrivalTimeMethod()
+    {
+        // TODO
+    }
 
+    private void AssignTask(Task task, Transporter porter)
+    {
+        // - assign the task to the transporter, mark assigned, add to assigned tasklist
+        porter.AddTask(task);
+        task.MarkAssigned();
+        assignedTasks.Add(task); 
     }
 
 }

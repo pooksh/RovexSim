@@ -6,9 +6,9 @@ using SimulationEvents;
 
 public abstract class Transporter : MonoBehaviour {
 
-    protected float speed;  // movement speed in units per second
-    protected bool busy;                     
-    protected bool available;                 
+    [SerializeField] protected float speed;
+    public bool busy;
+    public bool available;
     protected Queue<SimulationEvents.Task> assignedTasks;
     protected Queue<SimulationEvents.Downtime> assignedDowntime;
     
@@ -16,9 +16,16 @@ public abstract class Transporter : MonoBehaviour {
     protected Vector3 destination;  
     protected bool isMoving;  
     protected NavMeshAgent navAgent;    // unity NavMeshAgent for pathfinding
+    
+    protected LinkedListNode<GameObject> node; // a pointer to my spot in the linked list of available / not busy transporters for O(1) access/deletion
+    public LinkedListNode<GameObject> Node { // getters n setters
+        get { return node; }
+        set { node = value; } 
+    } 
+
     // navmesh logic is blackbox so we may see limitations in using this. we can start w/ it and see where/if it breaks
     
-    public enum MovementState{
+    public enum MovementState {
         Idle,   // AGV is stationary and ready for tasks
         Moving,
         Arrived,
@@ -35,6 +42,10 @@ public abstract class Transporter : MonoBehaviour {
     public abstract void StopMovement();
     public abstract bool HasReachedDestination();
     public abstract void SetMovementState(MovementState newState); 
+
+    protected void SetTag() { // call alongside initialization
+        gameObject.tag = "Transporter";
+    }
 
     public void AddTask(Task t) { // leave marking tasks to task manager.
         assignedTasks.Enqueue(t);
@@ -59,7 +70,11 @@ public abstract class Transporter : MonoBehaviour {
     protected float GetDistanceToDestination() {
         return Vector3.Distance(currentPosition, destination);
     }
-    
+
+    public bool IsAvailable() {
+        return available && !busy && currentState == MovementState.Idle;
+    }
+
     protected bool IsDestinationReachable(Vector3 targetPosition) {
         //  check if destination is on the NavMesh and reachable
         NavMeshHit hit; //  holds properties of the resulting location

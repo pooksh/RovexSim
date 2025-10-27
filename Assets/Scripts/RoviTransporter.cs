@@ -16,6 +16,9 @@ public class RoviTransporter : Transporter {
     private const float STOP_TIME_THRESHOLD = 2f;   // time in seconds to consider AGV stopped
 
     public override void InitializeTransporter(float speed) { // speed may be a constant tho?
+        SetTag();
+        node = null;
+
         this.speed = speed;
         this.busy = false;
         this.available = true;
@@ -187,7 +190,7 @@ public class RoviTransporter : Transporter {
                 
                 //  task completed
                 Task completedTask = assignedTasks.Dequeue();
-                completedTask.MarkCompleted();
+                completedTask.MarkCompleted(); // TODO: will possibly need to sync with tick?
                 
                 SetMovementState(MovementState.Idle);
                 
@@ -254,9 +257,10 @@ public class RoviTransporter : Transporter {
         }
     }
     
-    public void AssignNewTask(Vector3 origin, Vector3 destination, string taskId = "", string description = "") {
+    
+    public void AssignNewTask(string associatedMap, TimeOfDay entryTime, Vector3 origin, Vector3 destination, string taskId = "", string description = "") {
         //  create and assign a new task
-        Task newTask = new Task(origin, destination, taskId, description);
+        Task newTask = new Task(associatedMap, entryTime, origin, destination, taskId, description);
         AddTask(newTask);
         
         if (enableDebugLogs)
@@ -277,10 +281,6 @@ public class RoviTransporter : Transporter {
     
     public MovementState GetCurrentState() {
         return currentState;
-    }
-    
-    public bool IsAvailable() {
-        return available && !busy && currentState == MovementState.Idle;
     }
     
     public int GetTaskQueueCount() {
