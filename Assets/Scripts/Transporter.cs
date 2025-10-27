@@ -17,11 +17,15 @@ public abstract class Transporter : MonoBehaviour {
     protected bool isMoving;  
     protected NavMeshAgent navAgent;    // unity NavMeshAgent for pathfinding
     
-    public LinkedListNode<GameObject> node; // a pointer to my spot in the linked list of available / not busy transporters for O(1) access/deletion
+    protected LinkedListNode<GameObject> node; // a pointer to my spot in the linked list of available / not busy transporters for O(1) access/deletion
+    public LinkedListNode<GameObject> Node { // getters n setters
+        get { return node; }
+        set { node = value; } 
+    } 
 
     // navmesh logic is blackbox so we may see limitations in using this. we can start w/ it and see where/if it breaks
     
-    public enum MovementState{
+    public enum MovementState {
         Idle,   // AGV is stationary and ready for tasks
         Moving,
         Arrived,
@@ -65,6 +69,10 @@ public abstract class Transporter : MonoBehaviour {
     
     protected float GetDistanceToDestination() {
         return Vector3.Distance(currentPosition, destination);
+    }
+
+    public bool IsAvailable() {
+        return available && !busy && currentState == MovementState.Idle;
     }
 
     protected bool IsDestinationReachable(Vector3 targetPosition) {

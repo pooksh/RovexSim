@@ -104,9 +104,22 @@ namespace SimulationEvents {
             return deadline - Time.time;
         }
         
-        public string SmallDebugPrintVariables() {
-            return "Map: " + associatedMap + ", Origin: " + origin + ", Destination: " + destination;
+        public string GetSmallStringVariables() {
+            return "Map: " + associatedMap + ", Entry Time: " + entryTime.StringTime() + ", Origin: " + origin + ", Destination: " + destination;
         }
+
+        public string GetStringVariables() {
+            return "Map: " + associatedMap + ", Entry Time: " + entryTime.StringTime() + ", Origin: " + origin + ", Destination: " + destination + ", TaskID: " + taskId + ", Description: " + description + ",\n Priority: " + priority + ", Estimated Duration: " + estimatedDuration + ", Requires Loading: " + requiresLoading + ", Loading Time: " + loadingTime + ", Request Time: " + requestTime + ", Deadline: " + deadline;
+        }
+
+        public void SmallDebugPrintVariables() {
+            Debug.Log(GetSmallStringVariables());
+        }
+
+        public void DebugPrintVariables() {
+            Debug.Log(GetStringVariables());
+        }
+
 
     }
 

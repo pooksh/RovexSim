@@ -65,7 +65,8 @@ public class TimeOfDay : IComparable<TimeOfDay> {
         return hourString + ":" + minString;
     }
 
-    public string StringTimeAMPM() {
+    public string StringTimeAMPM()
+    {
 
         string minString = "" + minute;
         if (minute < 10) {
@@ -84,5 +85,35 @@ public class TimeOfDay : IComparable<TimeOfDay> {
     {
         return this.TotalMinutesSinceDawn().CompareTo(that.TotalMinutesSinceDawn());
     }
-    
+
+    public override int GetHashCode()
+    {
+        return TotalMinutesSinceDawn();
+    }
+
+    public override bool Equals(object obj)
+    {
+        if (obj == null || GetType() != obj.GetType())
+            return false;
+
+        TimeOfDay other = (TimeOfDay)obj;
+        return this.TotalMinutesSinceDawn() == other.TotalMinutesSinceDawn();
+    }
+
+    public static bool operator ==(TimeOfDay left, TimeOfDay right)
+    {
+        if (ReferenceEquals(left, right)) {
+            return true;
+        }
+        if (left is null || right is null) {
+            return false;
+        }
+        return left.TotalMinutesSinceDawn() == right.TotalMinutesSinceDawn();
+    }
+
+    public static bool operator !=(TimeOfDay left, TimeOfDay right)
+    {
+        return !(left == right);
+    }
+
 }

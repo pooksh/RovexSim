@@ -283,10 +283,6 @@ public class RoviTransporter : Transporter {
         return currentState;
     }
     
-    public bool IsAvailable() {
-        return available && !busy && currentState == MovementState.Idle;
-    }
-    
     public int GetTaskQueueCount() {
         return assignedTasks.Count;
     }

@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Collections;
 using System.Collections.Generic;
@@ -27,6 +28,19 @@ public class TaskManager : MonoBehaviour
 
     LinkedListNode<GameObject> tempNode;
 
+    string map;
+    TimeOfDay entry;
+    Vector3 origin;
+    Vector3 destination;
+    string taskID;
+    string description;
+    float priority;
+    float estDuration;
+    float loadingTime;
+    List<string> coordinatesList;
+    Task newtask;
+
+
     void Start()
     {
         unorderedTasksMaster = new List<Task>();
@@ -42,7 +56,7 @@ public class TaskManager : MonoBehaviour
         foreach (GameObject obj in transportersMaster) { // every node is not busy and available at the start of the day
             Transporter porter = obj.GetComponent<Transporter>();
             tempNode = assignableTransporters.AddLast(obj);
-            porter.node = tempNode;
+            porter.Node = tempNode;
         }
 
         switch (assignAlg) {
@@ -59,18 +73,11 @@ public class TaskManager : MonoBehaviour
         variables = new List<string>();     
         lines.AddRange(bigString.Split("\n"));
 
-        string map = lines[1];
-        TimeOfDay entry;
-        Vector3 origin;
-        Vector3 destination;
-        string taskID;
-        string description;
-        float priority;
-        float estDuration;
-        float loadingTime;
+        map = lines[1];
+        Debug.Log(map);
 
         float x, z; // TODO : change to x,y when axis updated
-        List<string> coordinatesList = new List<string>();
+        coordinatesList = new List<string>();
 
         for (int i = 3; i < lines.Count; i++) { // ignore first three lines
 
@@ -78,13 +85,15 @@ public class TaskManager : MonoBehaviour
             // right now dont add ',' in descriptions
             // use ';' to separate coordinates
 
-            Debug.Log(lines[i]);
-            Debug.Log(lines[i].Length);
-            if (lines[i].Length == 0) { // TODO: check if whitespace character
+
+            if (String.IsNullOrWhiteSpace(lines[i]) || lines[i].Length == 0) {
                 break;
             }
 
+            Debug.Log(lines[i]);
+            variables.Clear();
             variables.AddRange(lines[i].Split(","));
+
             entry = new TimeOfDay(variables[0]);
             coordinatesList.Clear();
             coordinatesList.AddRange(variables[1].Split(";"));
@@ -98,35 +107,48 @@ public class TaskManager : MonoBehaviour
             z = float.Parse(coordinatesList[1]);
             // TODO : change to x,y when axis updated
             destination = new Vector3(x,0,z);
+
             taskID = variables[3];
             description = variables[4];
             priority = float.Parse(variables[5]);
             estDuration = float.Parse(variables[6]);
             loadingTime = float.Parse(variables[7]);
             
-            // Debug.Log(map + ", " + entry + ", " + origin + ", " + destination + ", " + taskID + ", " + description + ", " + priority + ", " + estDuration + ", " + loadingTime);
+            // Debug.Log(map + ", "+ entry.StringTime() + ", "+ origin + ", "+ destination + ", "+ taskID + ", "+ description + ", "+ priority + ", "+ estDuration + ", "+ loadingTime);
 
-            unorderedTasksMaster.Add(new Task(map, entry, origin, destination, taskID, description, priority, estDuration, loadingTime));
+            newtask = new Task(map, entry, origin, destination, taskID, description, priority, estDuration, loadingTime);
+            // newtask.DebugPrintVariables();
+
+            Debug.Log("import task: " + (i-3));
+            unorderedTasksMaster.Add(newtask);
         }
 
         orderedTasksMaster = new Queue<Task>(unorderedTasksMaster.OrderBy(item => item.EntryTime));
         
+        foreach (Task t in unorderedTasksMaster) {
+            t.SmallDebugPrintVariables();
+        }
+
+        foreach (Task t in orderedTasksMaster) {
+            t.SmallDebugPrintVariables();
+        }
+
     }
 
     public void UpdateManager(TimeOfDay currentTime)  // called by time sim every tick
     {
-        Debug.Log("Tick called");
+        Debug.Log("Tick called at " + currentTime.StringTime());
 
         // update the list of available transporters
         foreach (GameObject obj in transportersMaster) {
             Transporter porter = obj.GetComponent<Transporter>();
-            if (!porter.available && porter.node != null && porter.node.List == assignableTransporters) {
-                assignableTransporters.Remove(porter.node);
-                porter.node = null;
+            if (!porter.IsAvailable() && porter.Node != null && porter.Node.List == assignableTransporters) {
+                assignableTransporters.Remove(porter.Node);
+                porter.Node = null;
             }
-            else if (porter.available && porter.node == null) {
+            else if (porter.available && porter.Node == null) {
                 tempNode = assignableTransporters.AddLast(obj);
-                porter.node = tempNode;
+                porter.Node = tempNode;
             }
         
         }
@@ -142,6 +164,9 @@ public class TaskManager : MonoBehaviour
                 currTask.MarkEntered();
                 enteredTasks.Enqueue(currTask, currTask.priority); 
                 orderedTasksMaster.Dequeue();
+                if (orderedTasksMaster.Count() == 0) {
+                    break;
+                }
                 currTask = orderedTasksMaster.Peek();
             }
         }
@@ -172,7 +197,7 @@ public class TaskManager : MonoBehaviour
         if (assignableTransporters.Count != 0) {
             foreach (GameObject obj in assignableTransporters) {
                 Transporter porter = obj.GetComponent<Transporter>();
-                if (!porter.busy) {
+                if (!porter.busy && enteredTasks.Count != 0) {
                     AssignTask(enteredTasks.Dequeue(), porter);
                 }
             }

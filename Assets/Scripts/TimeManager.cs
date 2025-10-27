@@ -42,10 +42,10 @@ public class TimeSimulation : MonoBehaviour
     void Update() // TODO: needs time warping / pausing / restarting functionality
     {           
         if (timer >= incrementThreshold && !simulationComplete) {
+            taskmgr.UpdateManager(currentTime);
+            // Debug.Log("The time is " + currentTime.StringTime() + " and " + currentTime.StringTimeAMPM() + " using the 12 hour AM/PM clock.");
             incrementThreshold += simulationTick;
             currentTime.IncrementTimeByMinutues(clockTick);
-            Debug.Log("The time is " + currentTime.StringTime() + " and " + currentTime.StringTimeAMPM() + " using the 12 hour AM/PM clock.");
-            taskmgr.UpdateManager(currentTime);
         }
 
         if (timer >= simulationDuration && !simulationComplete) {
