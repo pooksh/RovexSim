@@ -230,7 +230,7 @@ public class PorterTransporter : Transporter {
             timeStopped += Time.deltaTime;
             if (timeStopped > STOP_TIME_THRESHOLD && isMoving) {
                 if (enableDebugLogs)
-                    Debug.LogWarning($"{gameObject.name} appears to be stuck");
+                    Debug.LogWarning($"{gameObject.name} appears to be stuck!");
             }
         }
         else {

@@ -45,6 +45,12 @@ public class RoviTransporter : Transporter {
         navAgent.autoBraking = true;
         navAgent.avoidancePriority = 50;     // medium priority for hospital corridors
         
+        //  2D top-down (XY) adjustments: keep agent in XY plane
+        navAgent.updateRotation = false; // we don't want 3D yaw rotation for top-down sprites
+        Vector3 clampedStart = transform.position;
+        clampedStart.z = 0f;
+        transform.position = clampedStart;
+        
         if (enableDebugLogs)
             Debug.Log($"Initialized RoviTransporter: {gameObject.name} with speed {speed}");
     } 
@@ -87,7 +93,8 @@ public class RoviTransporter : Transporter {
             return;
         }
         
-        //  set destination and start moving
+        //  set destination and start moving (clamp Z for XY plane)
+        targetPosition.z = 0f;
         destination = targetPosition;
         navAgent.SetDestination(destination);
         isMoving = true;
@@ -209,6 +216,13 @@ public class RoviTransporter : Transporter {
         //  update position tracking
         UpdatePosition();
         
+        //  enforce XY plane (Z=0) to work with 2D NavMesh on XY
+        if (Mathf.Abs(transform.position.z) > 0f) {
+            Vector3 fixedPos = transform.position;
+            fixedPos.z = 0f;
+            transform.position = fixedPos;
+        }
+        
         //  check if AGV has reached destination
         if (isMoving && HasReachedDestination()) {
             isMoving = false;
@@ -228,7 +242,7 @@ public class RoviTransporter : Transporter {
             timeStopped += Time.deltaTime;
             if (timeStopped > STOP_TIME_THRESHOLD && isMoving) {
                 if (enableDebugLogs)
-                    Debug.LogWarning($"{gameObject.name} appears to be stuck");
+                    Debug.LogWarning($"{gameObject.name} appears to be stuck!");
             }
         }
         else {
