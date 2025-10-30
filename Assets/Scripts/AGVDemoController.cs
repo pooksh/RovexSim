@@ -12,7 +12,7 @@ public class AGVDemoController : MonoBehaviour
     
     [Header("UI Display")]
     [SerializeField] private bool showDebugInfo = true;        // show debug info on screen
-    
+
     private int taskCounter = 0;
     
     void Start() {
@@ -21,12 +21,28 @@ public class AGVDemoController : MonoBehaviour
             agvs = FindObjectsOfType<RoviTransporter>();
             Debug.Log($"Found {agvs.Length} AGVs in scene");
         }
+
+        bool foundNull = false;
+        foreach (Transform t in waypoints) {
+            if (t == null) {
+                foundNull = true;
+            }
+        }
+
+        if (waypoints == null || waypoints.Length == 0 || foundNull) { // find waypoints automatically if under these conditions
+            GameObject[] ways = GameObject.FindGameObjectsWithTag("Waypoint");
+            waypoints = new Transform[ways.Length];
+            for (int i = 0; i < ways.Length; i++) {
+                waypoints[i] = ways[i].transform;
+            }
+        }
         
         // ensure activeAGVCount is within valid range (1-3)
         activeAGVCount = Mathf.Clamp(activeAGVCount, 1, 3);
         
         // initialize AGV active states
         UpdateActiveAGVs();
+        
     }
     
     void Update() {

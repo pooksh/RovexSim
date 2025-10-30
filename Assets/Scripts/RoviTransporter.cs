@@ -47,6 +47,7 @@ public class RoviTransporter : Transporter {
         
         //  2D top-down (XY) adjustments: keep agent in XY plane
         navAgent.updateRotation = false; // we don't want 3D yaw rotation for top-down sprites
+        navAgent.updateUpAxis = false;
         Vector3 clampedStart = transform.position;
         clampedStart.z = 0f;
         transform.position = clampedStart;
