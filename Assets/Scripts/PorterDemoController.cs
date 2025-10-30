@@ -46,30 +46,44 @@ public class PorterDemoController : MonoBehaviour
         }
     }
     
-    private void AssignDemoTask() {
-        // find an available porter
-        PorterTransporter availablePorter = GetAvailablePorter();
-        
-        if (availablePorter != null && waypoints.Length >= 2) {
-            // create a task between two waypoints
-            Vector3 origin = waypoints[currentWaypointIndex].position;
-            Vector3 destination = waypoints[(currentWaypointIndex + 1) % waypoints.Length].position;
-            
-            string taskId = $"PorterDemoTask_{taskCounter++}";
-            string description = $"Manual transport from waypoint {currentWaypointIndex} to {(currentWaypointIndex + 1) % waypoints.Length}";
-            
-            // assign the task
-            availablePorter.AssignNewTask(origin, destination, taskId, description);
-            
-            // move to next waypoint for next task
-            currentWaypointIndex = (currentWaypointIndex + 1) % waypoints.Length;
-            
-            Debug.Log($"Assigned {taskId} to {availablePorter.gameObject.name}");
-        }
-        else if (availablePorter == null) {
-            Debug.Log("No available porters for task assignment");
-        }
+    private void AssignDemoTask()
+{
+    // find an available porter
+    PorterTransporter availablePorter = GetAvailablePorter();
+
+    // added: also check that there are patients available
+    if (availablePorter != null && waypoints.Length >= 2 && patients.Length > 0)
+    {
+        // create a task between two waypoints
+        Vector3 origin = waypoints[currentWaypointIndex].position;
+        Vector3 destination = waypoints[(currentWaypointIndex + 1) % waypoints.Length].position;
+
+        // updated task details
+        string taskId = $"PatientTransport_{taskCounter++}";
+        string description = "Transport non-critical patient";
+
+        // pick a random patient from the array
+        PatientMetrics patient = patients[Random.Range(0, patients.Length)];
+
+        // create a Task object (if using the Task class from SimulationEvents)
+        Task patientTask = new Task(origin, destination, taskId, description);
+
+        // link the patient to the task
+        patient.AssignTask(patientTask);
+
+        // assign the task to the porter as before
+        availablePorter.AssignNewTask(patientTask);
+
+        Debug.Log($"Assigned {taskId} to {availablePorter.gameObject.name} for patient {patient.patientId}");
+
+        // move to next waypoint for next task
+        currentWaypointIndex = (currentWaypointIndex + 1) % waypoints.Length;
     }
+    else if (availablePorter == null)
+    {
+        Debug.Log("No available porters for task assignment");
+    }
+}
     
     private PorterTransporter GetAvailablePorter() {
         // find the first available porter
