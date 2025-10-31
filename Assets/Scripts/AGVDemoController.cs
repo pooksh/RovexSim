@@ -16,10 +16,29 @@ public class AGVDemoController : MonoBehaviour
     private int taskCounter = 0;
     
     void Start() {
-        // find all RoviTransporter AGVs in the scene if not assigned
-        if (agvs == null || agvs.Length == 0) {
-            agvs = FindObjectsOfType<RoviTransporter>();
+        // always find all RoviTransporter AGVs in the scene to ensure we have the correct count
+        RoviTransporter[] foundAGVs = FindObjectsOfType<RoviTransporter>();
+        
+        // only use serialized array if it's explicitly set and matches the found count
+        // otherwise refresh to get all AGVs
+        if (agvs == null || agvs.Length == 0 || foundAGVs.Length != agvs.Length) {
+            agvs = foundAGVs;
             Debug.Log($"Found {agvs.Length} AGVs in scene");
+        }
+        else {
+            // check if any AGVs in the array are null, and refresh if needed
+            bool agvFoundNull = false;
+            foreach (RoviTransporter agv in agvs) {
+                if (agv == null) {
+                    agvFoundNull = true;
+                    break;
+                }
+            }
+            
+            if (agvFoundNull) {
+                agvs = foundAGVs;
+                Debug.Log($"Found {agvs.Length} AGVs in scene (refreshed due to null references)");
+            }
         }
 
         bool foundNull = false;
