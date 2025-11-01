@@ -15,6 +15,8 @@ public class AGVDemoController : MonoBehaviour
 
     private int taskCounter = 0;
     
+    private TimeManager timemgr;
+
     void Start() {
         // always find all RoviTransporter AGVs in the scene to ensure we have the correct count
         RoviTransporter[] foundAGVs = FindObjectsOfType<RoviTransporter>();
@@ -39,6 +41,11 @@ public class AGVDemoController : MonoBehaviour
                 agvs = foundAGVs;
                 Debug.Log($"Found {agvs.Length} AGVs in scene (refreshed due to null references)");
             }
+        }
+
+        timemgr = (TimeManager)FindObjectOfType(typeof(TimeManager));
+        if (timemgr == null) {
+            Debug.LogError("Could not find an object with time manager component. Please add an object with appropriate managers");
         }
 
         bool foundNull = false;
@@ -142,8 +149,10 @@ public class AGVDemoController : MonoBehaviour
                 Vector3 currentPosition = targetAGV.GetCurrentPosition();
                 Vector3 destination = waypoints[waypointIndex].position;
                 string taskId = $"ManualTask_{taskCounter++}";
-                
-                targetAGV.AssignNewTask(currentPosition, destination, taskId, $"Manual task to WP{waypointIndex}");
+                string associatedMap = "WaypointsManualTest-AGVDemo";
+                TimeOfDay entry = new TimeOfDay(timemgr.GetTimeNow());
+
+                targetAGV.AssignNewTask(associatedMap, entry, currentPosition, destination, taskId, $"Manual task to WP{waypointIndex}");
                 
                 if (targetAGV.IsAvailable()) {
                     Debug.Log($"Manual task assigned: {taskId} to {targetAGV.gameObject.name} - moving to WP{waypointIndex}");

@@ -34,7 +34,9 @@ public class PorterDemoController : MonoBehaviour
         }
         
         timemgr = (TimeManager)FindObjectOfType(typeof(TimeManager));
-
+        if (timemgr == null) {
+            Debug.LogError("Could not find an object with time manager component. Please add an object with appropriate managers");
+        }
     }
     
     void Update() {
