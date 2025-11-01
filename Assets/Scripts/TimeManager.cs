@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class TimeSimulation : MonoBehaviour
+public class TimeManager : MonoBehaviour
 {
     [SerializeField] private bool enableDebugLogs = true;
 
@@ -56,6 +56,8 @@ public class TimeSimulation : MonoBehaviour
 
     }
 
-
+    public TimeOfDay GetTimeNow() {
+        return currentTime;
+    }
 
 }

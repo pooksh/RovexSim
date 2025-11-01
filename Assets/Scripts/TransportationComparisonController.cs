@@ -69,6 +69,7 @@ public class TransportationComparisonController : MonoBehaviour
     }
     
     private string DetermineAssignmentSystem() {
+        return "";
     }
     
     private RoviTransporter GetAvailableAGV() {
@@ -135,6 +136,6 @@ public class TransportationComparisonController : MonoBehaviour
     private void AssignTaskToWaypoints(int originIndex, int destinationIndex, string system) {
     }
     
-    void OnGUI() {
+    void OnGUI() {}
 
 }

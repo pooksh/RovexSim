@@ -12,7 +12,6 @@ public class TimeOfDay : IComparable<TimeOfDay> {
         hour = hr;
         minute = min;
     }
-
     
     public TimeOfDay(string timecode)
     {
@@ -22,6 +21,11 @@ public class TimeOfDay : IComparable<TimeOfDay> {
         
         hour = Int32.Parse(timeParts[0]);
         minute = Int32.Parse(timeParts[1]);
+    }
+
+    public TimeOfDay(TimeOfDay time) {
+        hour = time.hour;
+        minute = time.minute;
     }
 
     public int TotalMinutesSinceDawn()
