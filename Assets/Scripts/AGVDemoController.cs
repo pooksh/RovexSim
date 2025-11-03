@@ -130,33 +130,50 @@ public class AGVDemoController : MonoBehaviour
     }
     
     private void AssignTaskToWaypoint(int waypointIndex) {
-        if (waypoints.Length > waypointIndex) {
-            RoviTransporter targetAGV = GetAvailableAGV();
-            
-            // If no available AGV, find the AGV with the shortest task queue
-            if (targetAGV == null) {
-                targetAGV = GetAGVWithShortestQueue();
-            }
-            
-            if (targetAGV != null) {
-                Vector3 currentPosition = targetAGV.GetCurrentPosition();
-                Vector3 destination = waypoints[waypointIndex].position;
+        RoviTransporter targetAGV = GetAvailableAGV();
+
+        //  if no available AGV, find the AGV with the shortest task queue
+        //  TODO: integrate w/ intelligent task assignment logic
+        if (targetAGV == null)
+        {
+            targetAGV = GetAGVWithShortestQueue();
+        }
+        
+        //  use new WaypointManager if available, otherwise fall back to old method
+        if (targetAGV != null) {
+            if (WaypointManager.Instance != null && waypointIndex < WaypointManager.Instance.GetWaypointCount()) {
                 string taskId = $"ManualTask_{taskCounter++}";
+                string waypointName = WaypointManager.Instance.GetWaypointName(waypointIndex);
                 
-                targetAGV.AssignNewTask(currentPosition, destination, taskId, $"Manual task to WP{waypointIndex}");
+                targetAGV.AssignTaskToWaypoint(waypointIndex, taskId, $"Manual task to {waypointName} (WP{waypointIndex})");
                 
                 if (targetAGV.IsAvailable()) {
-                    Debug.Log($"Manual task assigned: {taskId} to {targetAGV.gameObject.name} - moving to WP{waypointIndex}");
+                    Debug.Log($"Manual task assigned: {taskId} to {targetAGV.gameObject.name} - moving to {waypointName} (WP{waypointIndex})");
                 } else {
-                    Debug.Log($"Manual task queued: {taskId} to {targetAGV.gameObject.name} - will move to WP{waypointIndex} when available");
+                    Debug.Log($"Manual task queued: {taskId} to {targetAGV.gameObject.name} - will move to {waypointName} (WP{waypointIndex}) when available");
                 }
             }
             else {
-                Debug.LogWarning("No AGVs available for manual task assignment");
+                if (waypoints.Length > waypointIndex) {
+                    Vector3 currentPosition = targetAGV.GetCurrentPosition();
+                    Vector3 destination = waypoints[waypointIndex].position;
+                    string taskId = $"ManualTask_{taskCounter++}";
+                    
+                    targetAGV.AssignNewTask(currentPosition, destination, taskId, $"Manual task to WP{waypointIndex}");
+                    
+                    if (targetAGV.IsAvailable()) {
+                        Debug.Log($"Manual task assigned: {taskId} to {targetAGV.gameObject.name} - moving to WP{waypointIndex}");
+                    } else {
+                        Debug.Log($"Manual task queued: {taskId} to {targetAGV.gameObject.name} - will move to WP{waypointIndex} when available");
+                    }
+                }
+                else {
+                    Debug.LogWarning($"Waypoint index {waypointIndex} is out of range");
+                }
             }
         }
         else {
-            Debug.LogWarning($"Waypoint index {waypointIndex} is out of range (max: {waypoints.Length - 1})");
+            Debug.LogWarning("No AGVs available for manual task assignment");
         }
     }
     
@@ -210,6 +227,9 @@ public class AGVDemoController : MonoBehaviour
                 GUILayout.Label($"  Available: {agv.IsAvailable()}");
                 GUILayout.Label($"  Tasks in queue: {agv.GetTaskQueueCount()}");
                 GUILayout.Label($"  Position: {agv.GetCurrentPosition()}");
+                if (agv.GetRerouteAttempts() > 0) {
+                    GUILayout.Label($"  Reroute attempts: {agv.GetRerouteAttempts()}");
+                }
                 GUILayout.Space(5);
                 displayedCount++;
             }
