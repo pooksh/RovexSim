@@ -167,7 +167,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 590e519de3c419844a5031f6d5d648d8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  showSpheresOnPlay: 0
+  showSpheresOnPlay: 1
   enableDebugLogs: 1
 --- !u!1 &61290775
 GameObject:
@@ -439,7 +439,7 @@ GameObject:
   m_Component:
   - component: {fileID: 90875809}
   m_Layer: 0
-  m_Name: GameObject
+  m_Name: Waypoints
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -565,7 +565,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 590e519de3c419844a5031f6d5d648d8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  showSpheresOnPlay: 0
+  showSpheresOnPlay: 1
   enableDebugLogs: 1
 --- !u!1 &220229664
 GameObject:
@@ -1032,7 +1032,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 590e519de3c419844a5031f6d5d648d8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  showSpheresOnPlay: 0
+  showSpheresOnPlay: 1
   enableDebugLogs: 1
 --- !u!1 &503881138
 GameObject:
@@ -1184,7 +1184,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 590e519de3c419844a5031f6d5d648d8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  showSpheresOnPlay: 0
+  showSpheresOnPlay: 1
   enableDebugLogs: 1
 --- !u!1 &540676615
 GameObject:
@@ -15749,7 +15749,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 590e519de3c419844a5031f6d5d648d8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  showSpheresOnPlay: 0
+  showSpheresOnPlay: 1
   enableDebugLogs: 1
 --- !u!1 &804213160
 GameObject:
@@ -16241,7 +16241,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 590e519de3c419844a5031f6d5d648d8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  showSpheresOnPlay: 0
+  showSpheresOnPlay: 1
   enableDebugLogs: 1
 --- !u!1 &1197134413
 GameObject:
@@ -16425,7 +16425,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 590e519de3c419844a5031f6d5d648d8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  showSpheresOnPlay: 0
+  showSpheresOnPlay: 1
   enableDebugLogs: 1
 --- !u!1 &1355693298
 GameObject:
@@ -16742,6 +16742,50 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1408878405}
   m_Mesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &1480312798
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1480312800}
+  - component: {fileID: 1480312799}
+  m_Layer: 0
+  m_Name: TaskGenerator
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1480312799
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1480312798}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fb64ae8264037ac48b8ebeb35f824acd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!4 &1480312800
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1480312798}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.26289195, y: 0.4368261, z: -0.041745696}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1563374818
 GameObject:
   m_ObjectHideFlags: 0
@@ -16906,7 +16950,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 590e519de3c419844a5031f6d5d648d8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  showSpheresOnPlay: 0
+  showSpheresOnPlay: 1
   enableDebugLogs: 1
 --- !u!1 &1733875170
 GameObject:
@@ -16953,7 +16997,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 590e519de3c419844a5031f6d5d648d8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  showSpheresOnPlay: 0
+  showSpheresOnPlay: 1
   enableDebugLogs: 1
 --- !u!1 &1855602081
 GameObject:
@@ -17230,7 +17274,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 590e519de3c419844a5031f6d5d648d8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  showSpheresOnPlay: 0
+  showSpheresOnPlay: 1
   enableDebugLogs: 1
 --- !u!1 &1954973021
 GameObject:
@@ -21786,7 +21830,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 590e519de3c419844a5031f6d5d648d8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  showSpheresOnPlay: 0
+  showSpheresOnPlay: 1
   enableDebugLogs: 1
 --- !u!331 &4546299697061120800
 SpriteMask:
@@ -29198,3 +29242,4 @@ SceneRoots:
   - {fileID: 1563374819}
   - {fileID: 773399877}
   - {fileID: 1587467638}
+  - {fileID: 1480312800}
