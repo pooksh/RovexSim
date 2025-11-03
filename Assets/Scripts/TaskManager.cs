@@ -9,6 +9,8 @@ using Utils; // priority queue port
 
 public class TaskManager : MonoBehaviour
 {
+    [SerializeField] private bool enableDebugLogs;
+
     private List<Task> unorderedTasksMaster;
     private Queue<Task> orderedTasksMaster;
     private PriorityQueue<Task, float> enteredTasks;
@@ -43,6 +45,10 @@ public class TaskManager : MonoBehaviour
 
     void Start()
     {
+        if (inputTasks == null) {
+            Debug.LogError("No map/tasklist assigned on task manager");
+        }
+
         unorderedTasksMaster = new List<Task>();
         orderedTasksMaster = new Queue<Task>();
         enteredTasks = new PriorityQueue<Task,float>();
@@ -90,7 +96,9 @@ public class TaskManager : MonoBehaviour
                 break;
             }
 
-            Debug.Log(lines[i]);
+            if (enableDebugLogs) {
+                Debug.Log($"Current line being imported: {lines[i]}");
+            }
             variables.Clear();
             variables.AddRange(lines[i].Split(","));
 
