@@ -6,6 +6,7 @@ using System.Linq;
 using UnityEngine;
 using SimulationEvents;
 using Utils; // priority queue port
+using System.Text.RegularExpressions;
 
 public class TaskManager : MonoBehaviour
 {
@@ -42,6 +43,17 @@ public class TaskManager : MonoBehaviour
     List<string> coordinatesList;
     Task newtask;
 
+    private Regex csvSplitRegex = new Regex(
+        @"
+            (?:^|,)               # start of line or comma
+            (?:                   # non-capturing group
+            ""([^""]*)""        # quoted field in group 1
+            |                   # or
+            ([^,""]*)           # unquoted field in group 2
+            )
+        ",
+        RegexOptions.IgnorePatternWhitespace | RegexOptions.Compiled
+    );
 
     void Start()
     {
@@ -82,63 +94,87 @@ public class TaskManager : MonoBehaviour
         map = lines[1];
         Debug.Log(map);
 
-        float x, z; // TODO : change to x,y when axis updated
+        float x, y;
         coordinatesList = new List<string>();
 
         for (int i = 3; i < lines.Count; i++) { // ignore first three lines
-
-            // TODO: add checks for parsing errors ughh
-            // right now dont add ',' in descriptions
-            // use ';' to separate coordinates
-
-
-            if (String.IsNullOrWhiteSpace(lines[i]) || lines[i].Length == 0) {
-                break;
+            if (string.IsNullOrWhiteSpace(lines[i])) {
+                continue;
             }
 
             if (enableDebugLogs) {
                 Debug.Log($"Current line being imported: {lines[i]}");
             }
+
             variables.Clear();
-            variables.AddRange(lines[i].Split(","));
+
+            foreach (Match m in csvSplitRegex.Matches(lines[i])) {
+                string field;
+                if (m.Groups[1].Success) {
+                    field = m.Groups[1].Value;
+                } else {
+                    field = m.Groups[2].Value;
+                }
+                variables.Add(field);
+            }
 
             entry = new TimeOfDay(variables[0]);
+
             coordinatesList.Clear();
             coordinatesList.AddRange(variables[1].Split(";"));
             x = float.Parse(coordinatesList[0]);
-            z = float.Parse(coordinatesList[1]);
-            // TODO : change to x,y when axis updated
-            origin = new Vector3(x,0,z);
+            y = float.Parse(coordinatesList[1]);
+            origin = new Vector3(x, y, 0);
+
             coordinatesList.Clear();
             coordinatesList.AddRange(variables[2].Split(";"));
             x = float.Parse(coordinatesList[0]);
-            z = float.Parse(coordinatesList[1]);
-            // TODO : change to x,y when axis updated
-            destination = new Vector3(x,0,z);
+            y = float.Parse(coordinatesList[1]);
+            destination = new Vector3(x, y, 0);
 
             taskID = variables[3];
             description = variables[4];
-            priority = float.Parse(variables[5]);
-            estDuration = float.Parse(variables[6]);
-            loadingTime = float.Parse(variables[7]);
-            
-            // Debug.Log(map + ", "+ entry.StringTime() + ", "+ origin + ", "+ destination + ", "+ taskID + ", "+ description + ", "+ priority + ", "+ estDuration + ", "+ loadingTime);
+
+            if (string.IsNullOrWhiteSpace(variables[5])) {
+                    priority = 0f;
+                } else {
+                    priority = float.Parse(variables[5]);
+                }
+
+                if (string.IsNullOrWhiteSpace(variables[6])) {
+                    estDuration = 0f;
+                } else {
+                    estDuration = float.Parse(variables[6]);
+                }
+
+                if (string.IsNullOrWhiteSpace(variables[7])) {
+                    loadingTime = 0f;
+                } else {
+                    loadingTime = float.Parse(variables[7]);
+                }
+
+            if (enableDebugLogs) {
+                Debug.Log("Variables:" + map + ", " + entry.StringTime() + ", " + origin + ", " + destination + ", " + taskID + ", " + description + ", " + priority + ", " + estDuration + ", " + loadingTime);
+            }
 
             newtask = new Task(map, entry, origin, destination, taskID, description, priority, estDuration, loadingTime);
-            // newtask.DebugPrintVariables();
-
-            Debug.Log("import task: " + (i-3));
+            if (enableDebugLogs) {
+                Debug.Log("Imported task: " + (i - 3));
+            }
             unorderedTasksMaster.Add(newtask);
         }
 
         orderedTasksMaster = new Queue<Task>(unorderedTasksMaster.OrderBy(item => item.EntryTime));
-        
-        foreach (Task t in unorderedTasksMaster) {
-            t.SmallDebugPrintVariables();
-        }
 
-        foreach (Task t in orderedTasksMaster) {
-            t.SmallDebugPrintVariables();
+
+        if (enableDebugLogs) {
+            foreach (Task t in unorderedTasksMaster) {
+                t.SmallDebugPrintVariables();
+            }
+
+            foreach (Task t in orderedTasksMaster) {
+                t.SmallDebugPrintVariables();
+            }
         }
 
     }
