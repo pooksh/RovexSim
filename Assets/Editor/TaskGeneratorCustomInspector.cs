@@ -51,7 +51,7 @@ public class TaskGeneratorCustomInspector : Editor
             }
 
             StringBuilder newContent = new StringBuilder($"mapname\n{mapName}\nentryTime,origin,destination,id,description,priority,estimatedDuration,loadingTime\n");
-            int numTasks = UnityEngine.Random.Range(5,21);
+            int numTasks = UnityEngine.Random.Range(5,11);
             for (int i = 0; i < numTasks; i++) {
                 // generate a random entry time
                 int hour = UnityEngine.Random.Range(0,24);
@@ -82,7 +82,7 @@ public class TaskGeneratorCustomInspector : Editor
                 // generate random priority between 1-3
                 string priority = $"{UnityEngine.Random.Range(1,4)}";
                 // generate task description "Waypoint {origin} to Waypoint {destination} on map {mapName} with priority {priority}"
-                string description = $"From origin {objs[originIndex].name} at {origin.position} to destination {objs[destinationIndex].name} at {destination.position} on map {mapName} with priority {priority}";
+                string description = $"From origin {objs[originIndex].name} at {origin.position} to destination {objs[destinationIndex].name} at {destination.position} on map {mapName}";
                 // generate last two as -1
                 string dummy = "";
 
@@ -98,8 +98,8 @@ public class TaskGeneratorCustomInspector : Editor
             AssetDatabase.Refresh();
 
         }
-        if (GUILayout.Button("useless button :3")) {
-            Debug.Log("(˶˃ ᵕ ˂˶)");
-        }
+        // if (GUILayout.Button("useless button :3")) {
+        //     Debug.Log("(˶˃ ᵕ ˂˶)");
+        // }
     }
 }

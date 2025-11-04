@@ -168,9 +168,9 @@ public class TaskManager : MonoBehaviour
 
 
         if (enableDebugLogs) {
-            foreach (Task t in unorderedTasksMaster) {
-                t.SmallDebugPrintVariables();
-            }
+            // foreach (Task t in unorderedTasksMaster) {
+            //     t.SmallDebugPrintVariables();
+            // }
 
             foreach (Task t in orderedTasksMaster) {
                 t.SmallDebugPrintVariables();
@@ -181,8 +181,6 @@ public class TaskManager : MonoBehaviour
 
     public void UpdateManager(TimeOfDay currentTime)  // called by time sim every tick
     {
-        Debug.Log("Tick called at " + currentTime.StringTime());
-
         // update the list of available transporters
         foreach (GameObject obj in transportersMaster) {
             Transporter porter = obj.GetComponent<Transporter>();
@@ -204,8 +202,11 @@ public class TaskManager : MonoBehaviour
         // make tasks entered
         if (orderedTasksMaster.Count() != 0) {
             Task currTask = orderedTasksMaster.Peek();
-            while (currTask.EntryTime == currentTime) {
+            while (currTask.EntryTime <= currentTime) {
                 currTask.MarkEntered();
+                if (enableDebugLogs) {
+                    Debug.Log($"{currTask.description}; entered at {currentTime.StringTime()}");
+                }
                 enteredTasks.Enqueue(currTask, currTask.priority); 
                 orderedTasksMaster.Dequeue();
                 if (orderedTasksMaster.Count() == 0) {
@@ -221,8 +222,18 @@ public class TaskManager : MonoBehaviour
         // mark tasks assigned
        currentAssignmentMethod();
        
-       //  tasks are marked completed by transporter. we may need to sync to tick later - not sure
+    }
 
+    public void FinishSimulation() {
+        int completed = 0;
+        int total = 0;
+        foreach (Task t in unorderedTasksMaster) {
+            total++;
+            if (t.IsCompleted()) {
+                completed++;
+            }
+        }
+        Debug.Log($"{completed}/{total} Tasks completed!");
     }
 
     // take tasks that are entered and not assigned and assign them to an available transporter

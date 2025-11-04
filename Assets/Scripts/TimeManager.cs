@@ -18,6 +18,7 @@ public class TimeManager : MonoBehaviour
     private bool simulationComplete = false;
     private bool taskManagerActive = true;
     private bool ShowCurrentTime = true;
+    private bool endCalled = false;
 
     private TaskManager taskmgr;
 
@@ -35,6 +36,9 @@ public class TimeManager : MonoBehaviour
         taskmgr = GetComponent<TaskManager>();
         if (taskmgr == null)
         {
+            if (enableDebugLogs) {
+                Debug.LogWarning("Task manager is not currently active.");
+            }
             taskManagerActive = false;   
         }
 
@@ -50,13 +54,15 @@ public class TimeManager : MonoBehaviour
     {           
         if (timer >= incrementThreshold && !simulationComplete) {
             if (taskManagerActive) {
+
                 taskmgr.UpdateManager(currentTime);
             }
             if (ShowCurrentTime) {
                 timeTextField.text = $"{currentTime.StringTime()}";
             }
             if (enableDebugLogs) {
-                Debug.Log("The time is " + currentTime.StringTime() + " and " + currentTime.StringTimeAMPM() + " using the 12 hour AM/PM clock.");
+                // Debug.Log("The time is " + currentTime.StringTime() + " and " + currentTime.StringTimeAMPM() + " using the 12 hour AM/PM clock.");
+                Debug.Log("Tick called at " + currentTime.StringTime());
             }
             incrementThreshold += simulationTick;
             currentTime.IncrementTimeByMinutues(clockTick);
@@ -64,6 +70,10 @@ public class TimeManager : MonoBehaviour
 
         if (timer >= simulationDuration && !simulationComplete) {
             simulationComplete = true;
+        }
+        if (timer >= simulationDuration && simulationComplete && !endCalled) {
+            endCalled = true;
+            taskmgr.FinishSimulation();
         }
 
         timer += Time.deltaTime;

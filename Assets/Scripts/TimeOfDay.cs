@@ -120,4 +120,24 @@ public class TimeOfDay : IComparable<TimeOfDay> {
         return !(left == right);
     }
 
+    public static bool operator <(TimeOfDay left, TimeOfDay right)
+    {
+        return left.CompareTo(right) < 0;
+    }
+
+
+    public static bool operator >(TimeOfDay left, TimeOfDay right)
+    {
+        return left.CompareTo(right) > 0;
+    }
+    
+    public static bool operator <=(TimeOfDay left, TimeOfDay right)
+    {
+        return left.CompareTo(right) <= 0;
+    }
+
+    public static bool operator >=(TimeOfDay left, TimeOfDay right)
+    {
+        return left.CompareTo(right) >= 0;
+    }
 }
