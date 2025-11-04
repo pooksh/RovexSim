@@ -148,7 +148,7 @@ public class TaskManager : MonoBehaviour
                 }
 
                 if (string.IsNullOrWhiteSpace(variables[7])) {
-                    loadingTime = 0f;
+                    loadingTime = 2f;
                 } else {
                     loadingTime = float.Parse(variables[7]);
                 }
@@ -252,7 +252,7 @@ public class TaskManager : MonoBehaviour
         if (assignableTransporters.Count != 0) {
             foreach (GameObject obj in assignableTransporters) {
                 Transporter porter = obj.GetComponent<Transporter>();
-                if (!porter.busy && enteredTasks.Count != 0) {
+                if (!porter.busy && enteredTasks.Count != 0 && !enteredTasks.Peek().IsCompleted()) {
                     AssignTask(enteredTasks.Dequeue(), porter);
                 }
             }
