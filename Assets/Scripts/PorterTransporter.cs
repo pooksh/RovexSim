@@ -256,9 +256,9 @@ public class PorterTransporter : Transporter {
         }
     }
     
-    public void AssignNewTask(Vector3 origin, Vector3 destination, string taskId = "", string description = "") {
+    public void AssignNewTask(Vector3 origin, Vector3 destination, string associatedMap = "None", TimeOfDay entryTime = null, string taskId = "", string description = "") {
         // create and assign a new task
-        Task newTask = new Task(origin, destination, taskId, description);
+        Task newTask = new Task(origin, destination, associatedMap, entryTime, taskId, description);
         AddTask(newTask);
         
         if (enableDebugLogs)
@@ -279,10 +279,6 @@ public class PorterTransporter : Transporter {
     
     public MovementState GetCurrentState() {
         return currentState;
-    }
-    
-    public bool IsAvailable() {
-        return available && !busy && currentState == MovementState.Idle;
     }
     
     public int GetTaskQueueCount() {

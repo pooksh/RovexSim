@@ -131,7 +131,7 @@ public class WaypointManager : MonoBehaviour{
     }
 
     // create a task from waypoint indices
-    public SimulationEvents.Task CreateTask(int originWaypointIndex, int destinationWaypointIndex, 
+    public SimulationEvents.Task CreateTask(int originWaypointIndex, int destinationWaypointIndex, string associatedMap = "None", TimeOfDay entryTime = null,
         string taskId = "", string description = ""){
         if (!IsValidIndex(originWaypointIndex) || !IsValidIndex(destinationWaypointIndex))
         {
@@ -144,12 +144,12 @@ public class WaypointManager : MonoBehaviour{
         RecordWaypointUsage(originWaypointIndex);
         RecordWaypointUsage(destinationWaypointIndex);
 
-        return new SimulationEvents.Task(origin, destination, taskId, description);
+        return new SimulationEvents.Task(origin, destination, associatedMap, entryTime, taskId, description);
     }
 
     // create a task from waypoint names
     public SimulationEvents.Task CreateTask(string originWaypointName, string destinationWaypointName,
-        string taskId = "", string description = ""){
+        string associatedMap = "None", TimeOfDay entryTime = null,  string taskId = "", string description = ""){
         int originIdx = GetWaypointIndex(originWaypointName);
         int destIdx = GetWaypointIndex(destinationWaypointName);
 
@@ -159,12 +159,12 @@ public class WaypointManager : MonoBehaviour{
             return null;
         }
 
-        return CreateTask(originIdx, destIdx, taskId, description);
+        return CreateTask(originIdx, destIdx, associatedMap, entryTime, taskId, description);
     }
 
     // create a task from current AGV position to a waypoint
     public SimulationEvents.Task CreateTaskFromPosition(Vector3 originPosition, int destinationWaypointIndex,
-        string taskId = "", string description = ""){
+        string associatedMap = "None", TimeOfDay entryTime = null,  string taskId = "", string description = ""){
         if (!IsValidIndex(destinationWaypointIndex)){
             Debug.LogWarning($"Invalid destination waypoint index: {destinationWaypointIndex}");
             return null;
@@ -173,19 +173,19 @@ public class WaypointManager : MonoBehaviour{
         Vector3 destination = GetWaypointPosition(destinationWaypointIndex);
         RecordWaypointUsage(destinationWaypointIndex);
 
-        return new SimulationEvents.Task(originPosition, destination, taskId, description);
+        return new SimulationEvents.Task(originPosition, destination, associatedMap, entryTime, taskId, description);
     }
 
     // create a task from current AGV position to a waypoint by name
     public SimulationEvents.Task CreateTaskFromPosition(Vector3 originPosition, string destinationWaypointName,
-        string taskId = "", string description = ""){
+        string associatedMap = "None", TimeOfDay entryTime = null,  string taskId = "", string description = ""){
         int destIdx = GetWaypointIndex(destinationWaypointName);
         if (destIdx == -1){
             Debug.LogWarning($"Invalid destination waypoint name: {destinationWaypointName}");
             return null;
         }
 
-        return CreateTaskFromPosition(originPosition, destIdx, taskId, description);
+        return CreateTaskFromPosition(originPosition, destIdx, associatedMap, entryTime, taskId, description);
     }
 
     // find nearest waypoint to a position

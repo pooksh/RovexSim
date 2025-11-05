@@ -33,6 +33,8 @@ public class TransportationComparisonController : MonoBehaviour
     private float agvTotalTime = 0f;
     private float porterTotalTime = 0f;
     
+    private TimeManager timemgr;
+
     void Start() {
         // find all transporters in the scene if not assigned
         if (agvs == null || agvs.Length == 0) {
@@ -53,6 +55,11 @@ public class TransportationComparisonController : MonoBehaviour
         
         if (autoStartDemo) {
             StartCoroutine(DemoTaskLoop());
+        }
+
+        timemgr = (TimeManager)FindObjectOfType(typeof(TimeManager));
+        if (timemgr == null) {
+            Debug.LogError("Could not find an object with time manager component. Please add an object with appropriate managers");
         }
     }
     
@@ -89,14 +96,15 @@ public class TransportationComparisonController : MonoBehaviour
         
         string taskId = $"ComparisonTask_{taskCounter++}";
         string description = $"Transport comparison from waypoint {currentWaypointIndex} to {(currentWaypointIndex + 1) % waypoints.Length}";
-        
+        string associatedMap = "WaypointsTest-TransportationComparisonController";
+        TimeOfDay entry = new TimeOfDay(timemgr.GetTimeNow());
         // determine which system to assign to
         string assignedSystem = DetermineAssignmentSystem();
         
         if (assignedSystem == "AGV") {
             RoviTransporter availableAGV = GetAvailableAGV();
             if (availableAGV != null) {
-                availableAGV.AssignNewTask(origin, destination, taskId + "_AGV", description + " (AGV)");
+                availableAGV.AssignNewTask(origin, destination, associatedMap, entry, taskId + "_AGV", description + " (AGV)");
                 Debug.Log($"Assigned {taskId} to AGV: {availableAGV.gameObject.name}");
             }
             else {
@@ -106,7 +114,7 @@ public class TransportationComparisonController : MonoBehaviour
         else if (assignedSystem == "Porter") {
             PorterTransporter availablePorter = GetAvailablePorter();
             if (availablePorter != null) {
-                availablePorter.AssignNewTask(origin, destination, taskId + "_Porter", description + " (Porter)");
+                availablePorter.AssignNewTask(origin, destination, associatedMap, entry, taskId + "_Porter", description + " (Porter)");
                 Debug.Log($"Assigned {taskId} to Porter: {availablePorter.gameObject.name}");
             }
             else {
@@ -219,11 +227,13 @@ public class TransportationComparisonController : MonoBehaviour
             Vector3 origin = waypoints[originIndex].position;
             Vector3 destination = waypoints[destinationIndex].position;
             string taskId = $"ManualTask_{taskCounter++}";
+            string associatedMap = "WaypointsTest2-TransportationComparisonController";
+            TimeOfDay entry = new TimeOfDay(timemgr.GetTimeNow());
             
             if (system == "AGV") {
                 RoviTransporter availableAGV = GetAvailableAGV();
                 if (availableAGV != null) {
-                    availableAGV.AssignNewTask(origin, destination, taskId, $"Manual AGV task from WP{originIndex} to WP{destinationIndex}");
+                    availableAGV.AssignNewTask(origin, destination, associatedMap, entry, taskId, $"Manual AGV task from WP{originIndex} to WP{destinationIndex}");
                     Debug.Log($"Manual AGV task assigned: {taskId}");
                 }
                 else {
@@ -233,7 +243,7 @@ public class TransportationComparisonController : MonoBehaviour
             else if (system == "Porter") {
                 PorterTransporter availablePorter = GetAvailablePorter();
                 if (availablePorter != null) {
-                    availablePorter.AssignNewTask(origin, destination, taskId, $"Manual porter task from WP{originIndex} to WP{destinationIndex}");
+                    availablePorter.AssignNewTask(origin, destination, associatedMap, entry, taskId, $"Manual porter task from WP{originIndex} to WP{destinationIndex}");
                     Debug.Log($"Manual porter task assigned: {taskId}");
                 }
                 else {

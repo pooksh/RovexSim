@@ -31,7 +31,10 @@ public class RoviTransporter : Transporter {
     private float distanceTraveled = 0f;
     private Vector3 lastRerouteCheckPosition;
 
-    public override void InitializeTransporter(float speed) {
+    public override void InitializeTransporter(float speed) { // speed may be a constant tho?
+        SetTag();
+        node = null;
+
         this.speed = speed;
         this.busy = false;
         this.available = true;
@@ -236,7 +239,7 @@ public class RoviTransporter : Transporter {
                 
                 //  task completed
                 Task completedTask = assignedTasks.Dequeue();
-                completedTask.MarkCompleted();
+                completedTask.MarkCompleted(); // TODO: will possibly need to sync with tick?
                 
                 SetMovementState(MovementState.Idle);
                 
@@ -449,9 +452,10 @@ public class RoviTransporter : Transporter {
         }
     }
     
-    public void AssignNewTask(Vector3 origin, Vector3 destination, string taskId = "", string description = "") {
+    
+    public void AssignNewTask(Vector3 origin, Vector3 destination, string associatedMap = "None", TimeOfDay entryTime = null, string taskId = "", string description = "") {
         //  create and assign a new task
-        Task newTask = new Task(origin, destination, taskId, description);
+        Task newTask = new Task(origin, destination, associatedMap, entryTime, taskId, description);
         AddTask(newTask);
         
         if (enableDebugLogs)
@@ -467,14 +471,14 @@ public class RoviTransporter : Transporter {
     }
 
     // assign task using waypoint indices
-    public void AssignTaskByWaypoints(int originWaypointIndex, int destinationWaypointIndex, 
+    public void AssignTaskByWaypoints(int originWaypointIndex, int destinationWaypointIndex, string associatedMap = "None", TimeOfDay entryTime = null,
         string taskId = "", string description = ""){
         if (WaypointManager.Instance == null){
             Debug.LogError($"WaypointManager not found! Cannot assign task by waypoints.");
             return;
         }
 
-        Task task = WaypointManager.Instance.CreateTask(originWaypointIndex, destinationWaypointIndex, taskId, description);
+        Task task = WaypointManager.Instance.CreateTask(originWaypointIndex, destinationWaypointIndex, associatedMap, entryTime, taskId, description);
         if (task != null){
             AssignNewTask(task);
         }
@@ -483,39 +487,39 @@ public class RoviTransporter : Transporter {
     // assign task using waypoint names
 
     public void AssignTaskByWaypoints(string originWaypointName, string destinationWaypointName,
-        string taskId = "", string description = ""){
+        string associatedMap = "None", TimeOfDay entryTime = null, string taskId = "", string description = ""){
         if (WaypointManager.Instance == null){
             Debug.LogError($"WaypointManager not found! Cannot assign task by waypoint names.");
             return;
         }
 
-        Task task = WaypointManager.Instance.CreateTask(originWaypointName, destinationWaypointName, taskId, description);
+        Task task = WaypointManager.Instance.CreateTask(originWaypointName, destinationWaypointName, associatedMap, entryTime, taskId, description);
         if (task != null){
             AssignNewTask(task);
         }
     }
 
     // assign task from current position to waypoint index
-    public void AssignTaskToWaypoint(int destinationWaypointIndex, string taskId = "", string description = ""){
+    public void AssignTaskToWaypoint(int destinationWaypointIndex, string assignedMap = "None", TimeOfDay entryTime = null, string taskId = "", string description = ""){
         if (WaypointManager.Instance == null){
             Debug.LogError($"WaypointManager not found! Cannot assign task to waypoint.");
             return;
         }
 
-        Task task = WaypointManager.Instance.CreateTaskFromPosition(transform.position, destinationWaypointIndex, taskId, description);
+        Task task = WaypointManager.Instance.CreateTaskFromPosition(transform.position, destinationWaypointIndex, assignedMap, entryTime, taskId, description);
         if (task != null){
             AssignNewTask(task);
         }
     }
 
     // assign task from current position to waypoint name
-    public void AssignTaskToWaypoint(string destinationWaypointName, string taskId = "", string description = ""){
+    public void AssignTaskToWaypoint(string destinationWaypointName, string assignedMap = "None", TimeOfDay entryTime = null, string taskId = "", string description = ""){
         if (WaypointManager.Instance == null){
             Debug.LogError($"WaypointManager not found! Cannot assign task to waypoint.");
             return;
         }
 
-        Task task = WaypointManager.Instance.CreateTaskFromPosition(transform.position, destinationWaypointName, taskId, description);
+        Task task = WaypointManager.Instance.CreateTaskFromPosition(transform.position, destinationWaypointName, assignedMap, entryTime, taskId, description);
         if (task != null){
             AssignNewTask(task);
         }
@@ -527,10 +531,6 @@ public class RoviTransporter : Transporter {
     
     public MovementState GetCurrentState() {
         return currentState;
-    }
-    
-    public bool IsAvailable() {
-        return available && !busy && currentState == MovementState.Idle;
     }
     
     public int GetTaskQueueCount() {

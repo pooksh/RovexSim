@@ -39,7 +39,7 @@ This Unity project implements a basic Automated Guided Vehicle (AGV) system for 
 ### 1. Scene Setup
 1. Create a new Unity scene with a NavMesh
 2. Add NavMeshSurface component to your floor/ground object
-3. Bake the NavMesh (Window -> AI -> Navigation)
+3. Bake the NavMesh (Window -> AI -> Navigation or through object with NavMesh Surface component)
 
 ### 2. AGV Setup
 1. Create a GameObject for your AGV
