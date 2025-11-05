@@ -152,7 +152,7 @@ public class AGVDemoController : MonoBehaviour
                 string associatedMap = "WaypointsManualTest-AGVDemo";
                 TimeOfDay entry = new TimeOfDay(timemgr.GetTimeNow());
 
-                targetAGV.AssignNewTask(associatedMap, entry, currentPosition, destination, taskId, $"Manual task to WP{waypointIndex}");
+                targetAGV.AssignNewTask(currentPosition, destination, associatedMap, entry, taskId, $"Manual task to WP{waypointIndex}");
                 
                 if (targetAGV.IsAvailable()) {
                     Debug.Log($"Manual task assigned: {taskId} to {targetAGV.gameObject.name} - moving to WP{waypointIndex}");

@@ -256,9 +256,9 @@ public class PorterTransporter : Transporter {
         }
     }
     
-    public void AssignNewTask(string associatedMap, TimeOfDay entryTime, Vector3 origin, Vector3 destination, string taskId = "", string description = "") {
+    public void AssignNewTask(Vector3 origin, Vector3 destination, string associatedMap = "None", TimeOfDay entryTime = null, string taskId = "", string description = "") {
         // create and assign a new task
-        Task newTask = new Task(associatedMap, entryTime, origin, destination, taskId, description);
+        Task newTask = new Task(origin, destination, associatedMap, entryTime, taskId, description);
         AddTask(newTask);
         
         if (enableDebugLogs)

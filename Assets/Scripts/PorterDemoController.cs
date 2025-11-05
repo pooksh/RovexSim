@@ -75,7 +75,7 @@ public class PorterDemoController : MonoBehaviour
         PatientMetrics patient = patients[Random.Range(0, patients.Length)];
 
         // create a Task object (if using the Task class from SimulationEvents)
-        Task patientTask = new Task(associatedMap, entry, origin, destination, taskId, description);
+        Task patientTask = new Task(origin, destination, associatedMap, entry, taskId, description);
 
         // link the patient to the task
         patient.AssignTask(patientTask);
@@ -136,7 +136,7 @@ public class PorterDemoController : MonoBehaviour
                 Vector3 destination = waypoints[destinationIndex].position;
                 string taskId = $"PorterManualTask_{taskCounter++}";
                                 
-                availablePorter.AssignNewTask(associatedMap, entry, origin, destination, taskId, $"Manual porter task from WP{originIndex} to WP{destinationIndex}");
+                availablePorter.AssignNewTask(origin, destination, associatedMap, entry, taskId, $"Manual porter task from WP{originIndex} to WP{destinationIndex}");
                 Debug.Log($"Manual porter task assigned: {taskId}");
             }
             else {

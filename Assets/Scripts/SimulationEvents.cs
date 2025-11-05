@@ -60,9 +60,9 @@ namespace SimulationEvents {
         public float requestTime;             // When the task was requested
         public float deadline;                // When the task must be completed
         
-        public Task(string associatedMap, TimeOfDay entryTime, Vector3 origin, Vector3 destination, string taskId = "", string description = "") {
+        public Task(Vector3 origin, Vector3 destination, string associatedMap = "None", TimeOfDay entryTime = null, string taskId = "", string description = "") {
             this.associatedMap = associatedMap;
-            this.entryTime = entryTime;
+            this.entryTime = entryTime ?? new TimeOfDay(0,0);
             this.origin = origin;
             this.destination = destination;
             this.taskId = taskId;
@@ -75,7 +75,7 @@ namespace SimulationEvents {
             this.deadline = requestTime + estimatedDuration;
         }
         
-        public Task(string associatedMap, TimeOfDay entryTime, Vector3 origin, Vector3 destination, string taskId, string description, 
+        public Task(Vector3 origin, Vector3 destination, string associatedMap, TimeOfDay entryTime, string taskId, string description, 
                    float priority, float estimatedDuration, float loadingTime = 2f) {
             this.associatedMap = associatedMap;
             this.entryTime = entryTime;

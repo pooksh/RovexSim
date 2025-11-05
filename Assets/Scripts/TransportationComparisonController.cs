@@ -104,7 +104,7 @@ public class TransportationComparisonController : MonoBehaviour
         if (assignedSystem == "AGV") {
             RoviTransporter availableAGV = GetAvailableAGV();
             if (availableAGV != null) {
-                availableAGV.AssignNewTask(associatedMap, entry, origin, destination, taskId + "_AGV", description + " (AGV)");
+                availableAGV.AssignNewTask(origin, destination, associatedMap, entry, taskId + "_AGV", description + " (AGV)");
                 Debug.Log($"Assigned {taskId} to AGV: {availableAGV.gameObject.name}");
             }
             else {
@@ -114,7 +114,7 @@ public class TransportationComparisonController : MonoBehaviour
         else if (assignedSystem == "Porter") {
             PorterTransporter availablePorter = GetAvailablePorter();
             if (availablePorter != null) {
-                availablePorter.AssignNewTask(associatedMap, entry, origin, destination, taskId + "_Porter", description + " (Porter)");
+                availablePorter.AssignNewTask(origin, destination, associatedMap, entry, taskId + "_Porter", description + " (Porter)");
                 Debug.Log($"Assigned {taskId} to Porter: {availablePorter.gameObject.name}");
             }
             else {
@@ -233,7 +233,7 @@ public class TransportationComparisonController : MonoBehaviour
             if (system == "AGV") {
                 RoviTransporter availableAGV = GetAvailableAGV();
                 if (availableAGV != null) {
-                    availableAGV.AssignNewTask(associatedMap, entry, origin, destination, taskId, $"Manual AGV task from WP{originIndex} to WP{destinationIndex}");
+                    availableAGV.AssignNewTask(origin, destination, associatedMap, entry, taskId, $"Manual AGV task from WP{originIndex} to WP{destinationIndex}");
                     Debug.Log($"Manual AGV task assigned: {taskId}");
                 }
                 else {
@@ -243,7 +243,7 @@ public class TransportationComparisonController : MonoBehaviour
             else if (system == "Porter") {
                 PorterTransporter availablePorter = GetAvailablePorter();
                 if (availablePorter != null) {
-                    availablePorter.AssignNewTask(associatedMap, entry, origin, destination, taskId, $"Manual porter task from WP{originIndex} to WP{destinationIndex}");
+                    availablePorter.AssignNewTask(origin, destination, associatedMap, entry, taskId, $"Manual porter task from WP{originIndex} to WP{destinationIndex}");
                     Debug.Log($"Manual porter task assigned: {taskId}");
                 }
                 else {

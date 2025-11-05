@@ -157,7 +157,7 @@ public class TaskManager : MonoBehaviour
                 Debug.Log("Variables:" + map + ", " + entry.StringTime() + ", " + origin + ", " + destination + ", " + taskID + ", " + description + ", " + priority + ", " + estDuration + ", " + loadingTime);
             }
 
-            newtask = new Task(map, entry, origin, destination, taskID, description, priority, estDuration, loadingTime);
+            newtask = new Task(origin, destination, map, entry, taskID, description, priority, estDuration, loadingTime);
             if (enableDebugLogs) {
                 Debug.Log("Imported task: " + (i - 3));
             }
