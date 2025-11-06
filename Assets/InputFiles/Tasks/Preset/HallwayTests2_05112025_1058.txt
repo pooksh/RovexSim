@@ -1,0 +1,5 @@
+mapname
+HallwayTests2
+entryTime,origin,destination,id,description,priority,estimatedDuration,loadingTime
+,0.04010201;3.205958,0.05370784;0.335092,task-0,"From origin Waypoint (3) at (0.04, 3.21, 0.00) to destination Waypoint (4) at (0.05, 0.34, 0.00) on map HallwayTests2",,,
+,-2.272918;1.763722,0.05370784;0.335092,task-1,"From origin Waypoint (5) at (-2.27, 1.76, 0.00) to destination Waypoint (4) at (0.05, 0.34, 0.00) on map HallwayTests2",,,

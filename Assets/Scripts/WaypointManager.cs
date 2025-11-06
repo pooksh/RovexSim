@@ -119,6 +119,7 @@ public class WaypointManager : MonoBehaviour{
         if (IsValidIndex(index)){
             return waypointNames[index];
         }
+        Debug.LogWarning($"Invalid waypoint index: {index}");
         return "";
     }
 

@@ -108,7 +108,7 @@ public class TaskManager : MonoBehaviour
 
             variables.Clear();
 
-            foreach (Match m in csvSplitRegex.Matches(lines[i])) {
+            foreach (Match m in csvSplitRegex.Matches(" " + lines[i])) {
                 string field;
                 if (m.Groups[1].Success) {
                     field = m.Groups[1].Value;
@@ -118,7 +118,11 @@ public class TaskManager : MonoBehaviour
                 variables.Add(field);
             }
 
-            entry = new TimeOfDay(variables[0]);
+            if (string.IsNullOrWhiteSpace(variables[0])) {
+                entry = new TimeOfDay(0,0);
+            }else {
+                entry = new TimeOfDay(variables[0]);
+            }
 
             coordinatesList.Clear();
             coordinatesList.AddRange(variables[1].Split(";"));
@@ -136,22 +140,22 @@ public class TaskManager : MonoBehaviour
             description = variables[4];
 
             if (string.IsNullOrWhiteSpace(variables[5])) {
-                    priority = 0f;
-                } else {
-                    priority = float.Parse(variables[5]);
-                }
+                priority = 0f;
+            } else {
+                priority = float.Parse(variables[5]);
+            }
 
-                if (string.IsNullOrWhiteSpace(variables[6])) {
-                    estDuration = 0f;
-                } else {
-                    estDuration = float.Parse(variables[6]);
-                }
+            if (string.IsNullOrWhiteSpace(variables[6])) {
+                estDuration = 0f;
+            } else {
+                estDuration = float.Parse(variables[6]);
+            }
 
-                if (string.IsNullOrWhiteSpace(variables[7])) {
-                    loadingTime = 2f;
-                } else {
-                    loadingTime = float.Parse(variables[7]);
-                }
+            if (string.IsNullOrWhiteSpace(variables[7])) {
+                loadingTime = 2f;
+            } else {
+                loadingTime = float.Parse(variables[7]);
+            }
 
             if (enableDebugLogs) {
                 Debug.Log("Variables:" + map + ", " + entry.StringTime() + ", " + origin + ", " + destination + ", " + taskID + ", " + description + ", " + priority + ", " + estDuration + ", " + loadingTime);
