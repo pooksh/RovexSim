@@ -239,6 +239,10 @@ MonoBehaviour:
   pathValidationInterval: 2
   maxRerouteAttempts: 3
   minimumRerouteDistance: 3
+  avoidanceRadius: 2
+  backingDistance: 1.5
+  backingSpeed: 1
+  stuckTogetherThreshold: 1.5
 --- !u!4 &65779067
 Transform:
   m_ObjectHideFlags: 0
@@ -16992,14 +16996,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 07ab67b1edd518f4d8db53d1680f57cb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  file: {fileID: 4900000, guid: 899cbab576dc5204cace0f3305bc1359, type: 3}
+  file: {fileID: 4900000, guid: 12deee9342675b14f8c2b92bf60c497d, type: 3}
   wpmgr: {fileID: 1855602085}
   originWaypoints:
   - {fileID: 1915227921}
   - {fileID: 1390752398}
+  - {fileID: 569501722}
+  - {fileID: 569501722}
   destinationWaypoints:
   - {fileID: 569501722}
   - {fileID: 569501722}
+  - {fileID: 1915227921}
+  - {fileID: 1390752398}
 --- !u!1 &1525595887
 GameObject:
   m_ObjectHideFlags: 0
@@ -17960,9 +17968,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d8b2a65644387814e9d6f3077addf1f7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  enableDebugLogs: 0
+  enableDebugLogs: 1
   assignAlg: 0
-  inputTasks: {fileID: 4900000, guid: 899cbab576dc5204cace0f3305bc1359, type: 3}
+  inputTasks: {fileID: 0}
 --- !u!114 &1855602085
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -18350,6 +18358,10 @@ MonoBehaviour:
   pathValidationInterval: 2
   maxRerouteAttempts: 3
   minimumRerouteDistance: 3
+  avoidanceRadius: 2
+  backingDistance: 1.5
+  backingSpeed: 1
+  stuckTogetherThreshold: 1.5
 --- !u!1 &2050022648
 GameObject:
   m_ObjectHideFlags: 0

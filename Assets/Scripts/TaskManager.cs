@@ -42,6 +42,7 @@ public class TaskManager : MonoBehaviour
     float loadingTime;
     List<string> coordinatesList;
     Task newtask;
+    TaskGenerator tg;
 
     private Regex csvSplitRegex = new Regex(
         @"
@@ -58,7 +59,14 @@ public class TaskManager : MonoBehaviour
     void Start()
     {
         if (inputTasks == null) {
-            Debug.LogError("No map/tasklist assigned on task manager");
+            tg = (TaskGenerator)FindObjectOfType(typeof(TaskGenerator));
+            if (tg == null) {
+                Debug.LogError("Task generator could not be found to import tasklist file from.");
+            }
+            inputTasks = tg.file;
+            if (inputTasks == null) {
+                Debug.LogError("No map/tasklist assigned on task manager or task generator");
+            }
         }
 
         unorderedTasksMaster = new List<Task>();
@@ -247,7 +255,7 @@ public class TaskManager : MonoBehaviour
     // - find a transporter to assign the task
     // - assign the task to the transporter, mark assigned, add to assigned tasklist
 
-    private void FirstAvailableNotBusyMethod()
+    private void FirstAvailableNotBusyMethod() 
     {
         if (enteredTasks.Count == 0) {
             Debug.Log("there are no currently entered tasks");
