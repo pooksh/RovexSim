@@ -18494,7 +18494,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   enableDebugLogs: 0
-  simulationDuration: 60
+  simulationDuration: 180
   minutesInDay: 1440
   clockTick: 5
   timeTextField: {fileID: 752013383}
