@@ -15,6 +15,7 @@ public class TaskGeneratorCustomInspector : Editor
     private TaskGenerator tg;
     private WaypointManager wpManager;
     private TextAsset taskFile;
+    private int numRandomTasks;
     private Transform[] originWaypoints;
     private Transform[] destinationWaypoints;
     public override void OnInspectorGUI() {
@@ -23,6 +24,7 @@ public class TaskGeneratorCustomInspector : Editor
         wpManager = tg.wpmgr;
         originWaypoints = tg.originWaypoints;
         destinationWaypoints = tg.destinationWaypoints;
+        numRandomTasks = tg.numRandomTasks;
         base.OnInspectorGUI();
         EditorGUILayout.LabelField("Tasklist Generator");
         mapName = EditorGUILayout.TextField("Target Map Name", mapName);
@@ -54,8 +56,7 @@ public class TaskGeneratorCustomInspector : Editor
             Transform[] waypoints = wpManager.GetAllWaypoints();
             StringBuilder newContent = new StringBuilder($"mapname\n{mapName}\nentryTime,origin,destination,id,description,priority,estimatedDuration,loadingTime\n");
 
-            int numTasks = 30;
-            for (int i = 0; i < numTasks; i++) {
+            for (int i = 0; i < numRandomTasks; i++) {
                 // generate a random entry time
                 int hour = UnityEngine.Random.Range(0,24);
                 int min = UnityEngine.Random.Range(0,60);

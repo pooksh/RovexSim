@@ -8,5 +8,6 @@ public class TaskGenerator : MonoBehaviour
     [SerializeField] public WaypointManager wpmgr;
     [SerializeField] public Transform[] originWaypoints;
     [SerializeField] public Transform[] destinationWaypoints;
-    // TaskGenerator handles the rest
+    [SerializeField] public int numRandomTasks;
+    // TaskGeneratorCustomInspector handles the rest
 }
