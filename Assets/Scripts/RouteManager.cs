@@ -80,39 +80,45 @@ public class RouteManager : MonoBehaviour{
         return false;
     }
 
-    // find an alternative route to the destination
     public Vector3? FindAlternativeRoute(Vector3 from, Vector3 to){
-        // Create potential intermediate points in corridor spaces
-        // These points are offset from the direct path to avoid obstacles
+        if (WaypointManager.Instance != null){
+            Vector3? waypointRoute = FindAlternativeRouteViaWaypoints(from, to);
+            if (waypointRoute.HasValue){
+                return waypointRoute;
+            }
+        }
+        
+        Vector3? navMeshRoute = FindAlternativeRouteViaNavMesh(from, to);
+        if (navMeshRoute.HasValue){
+            return navMeshRoute;
+        }
+        
+        // fallback: try simple offsets (original behavior)
         Vector3 direction = (to - from).normalized;
         float totalDistance = Vector3.Distance(from, to);
         
-        // Try points at different distances along the path with perpendicular offsets
+        // try points at diff distances along path with perpendicular offsets
         Vector3[] intermediatePoints = new Vector3[] {
             from + direction * (totalDistance / 3) + new Vector3(-2f, 0f, 0f),
             from + direction * (totalDistance / 3) + new Vector3(2f, 0f, 0f),
             from + direction * (totalDistance * 2/3) + new Vector3(-2f, 0f, 0f),
             from + direction * (totalDistance * 2/3) + new Vector3(2f, 0f, 0f),
-            // Add diagonal offsets for more options
             from + direction * (totalDistance / 2) + new Vector3(-2f, -2f, 0f),
             from + direction * (totalDistance / 2) + new Vector3(2f, 2f, 0f)
         };
         
         foreach (Vector3 point in intermediatePoints) {
             if (IsPositionReachable(point) && !IsAreaBlocked(point)) {
-                // Check if this route avoids the congested/blocked area
                 if (!IsPathCongested(from, point) && !IsPathCongested(point, to)) {
                     return point;
                 }
             }
         }
 
-        // If no intermediate points work, try simple offsets from destination
+        // if no intermediate points work, try simple offsets from destination
         Vector3[] offsets = new Vector3[] {
-            new Vector3(-2f, 0f, 0f),
-            new Vector3(2f, 0f, 0f),
-            new Vector3(0f, -2f, 0f),
-            new Vector3(0f, 2f, 0f)
+            new Vector3(-2f, 0f, 0f), new Vector3(2f, 0f, 0f),
+            new Vector3(0f, -2f, 0f), new Vector3(0f, 2f, 0f)
         };
 
         foreach (Vector3 offset in offsets) {
@@ -122,6 +128,120 @@ public class RouteManager : MonoBehaviour{
             }
         }
 
+        return null;
+    }
+    
+    private Vector3? FindAlternativeRouteViaWaypoints(Vector3 from, Vector3 to){
+        if (WaypointManager.Instance == null) return null;
+        
+        int fromWaypoint = WaypointManager.Instance.FindNearestWaypoint(from);
+        int toWaypoint = WaypointManager.Instance.FindNearestWaypoint(to);
+        
+        if (fromWaypoint == -1 || toWaypoint == -1) return null;
+        
+        Transform[] allWaypoints = WaypointManager.Instance.GetAllWaypoints();
+        if (allWaypoints == null || allWaypoints.Length < 2) return null;
+        
+        // try to find (reachable + not in congested area) waypoints that could serve as alternative intermediate points
+        List<Vector3> candidateWaypoints = new List<Vector3>();
+        
+        foreach (Transform waypoint in allWaypoints){
+            if (waypoint == null) continue;
+            
+            Vector3 waypointPos = waypoint.position;
+            waypointPos.z = 0f;
+            
+            // skip if too close to start or destination
+            if (Vector3.Distance(waypointPos, from) < 2f || Vector3.Distance(waypointPos, to) < 2f){
+                continue;
+            }
+            
+            if (IsPositionReachable(waypointPos) && !IsAreaBlocked(waypointPos)){
+                if (!IsPathCongested(from, waypointPos) && !IsPathCongested(waypointPos, to)){
+                    NavMeshPath testPath = new NavMeshPath();
+                    if (NavMesh.CalculatePath(from, waypointPos, NavMesh.AllAreas, testPath) && 
+                        testPath.status == NavMeshPathStatus.PathComplete){
+                        NavMeshPath testPath2 = new NavMeshPath();
+                        if (NavMesh.CalculatePath(waypointPos, to, NavMesh.AllAreas, testPath2) && 
+                            testPath2.status == NavMeshPathStatus.PathComplete){
+                            candidateWaypoints.Add(waypointPos);
+                        }
+                    }
+                }
+            }
+        }
+        
+        // if we found candidate waypoints, return one w/ least congestion. sort by total path cost (distance + congestion)
+        if (candidateWaypoints.Count > 0){
+            candidateWaypoints.Sort((a, b) => {
+                float costA = Vector3.Distance(from, a) + Vector3.Distance(a, to) + 
+                             GetPathCostMultiplier(a) * 10f;
+                float costB = Vector3.Distance(from, b) + Vector3.Distance(b, to) + 
+                             GetPathCostMultiplier(b) * 10f;
+                return costA.CompareTo(costB);
+            });
+            
+            return candidateWaypoints[0];
+        }
+        
+        return null;
+    }
+    
+    private Vector3? FindAlternativeRouteViaNavMesh(Vector3 from, Vector3 to){
+        // if direct path is congested, try to find alternative paths
+        // by sampling points around the path and testing alternative routes
+        NavMeshPath directPath = new NavMeshPath();
+        if (!NavMesh.CalculatePath(from, to, NavMesh.AllAreas, directPath)){
+            return null;
+        }
+        
+        List<Vector3> alternativePoints = new List<Vector3>();
+        
+        // sample points perpendicular to the direct path at various distances
+        for (int i = 1; i < directPath.corners.Length; i++){
+            Vector3 segmentStart = directPath.corners[i - 1];
+            Vector3 segmentEnd = directPath.corners[i];
+            Vector3 segmentDir = (segmentEnd - segmentStart).normalized;
+            
+            Vector3 perpDir = new Vector3(-segmentDir.y, segmentDir.x, 0f);
+            
+            for (float offset = -4f; offset <= 4f; offset += 2f){
+                Vector3 testPoint = segmentStart + perpDir * offset;
+                testPoint.z = 0f;
+                
+                NavMeshHit hit;
+                if (NavMesh.SamplePosition(testPoint, out hit, 2f, NavMesh.AllAreas)){
+                    testPoint = hit.position;
+                    
+                    NavMeshPath testPath1 = new NavMeshPath();
+                    NavMeshPath testPath2 = new NavMeshPath();
+                    
+                    if (NavMesh.CalculatePath(from, testPoint, NavMesh.AllAreas, testPath1) && 
+                        testPath1.status == NavMeshPathStatus.PathComplete &&
+                        NavMesh.CalculatePath(testPoint, to, NavMesh.AllAreas, testPath2) && 
+                        testPath2.status == NavMeshPathStatus.PathComplete){
+                        
+                        if (!IsPathCongested(from, testPoint) && !IsPathCongested(testPoint, to)){
+                            alternativePoints.Add(testPoint);
+                        }
+                    }
+                }
+            }
+        }
+        
+        // return the best alternative point (least congested, reasonable distance)
+        if (alternativePoints.Count > 0){
+            alternativePoints.Sort((a, b) => {
+                float costA = Vector3.Distance(from, a) + Vector3.Distance(a, to) + 
+                             GetPathCostMultiplier(a) * 10f;
+                float costB = Vector3.Distance(from, b) + Vector3.Distance(b, to) + 
+                             GetPathCostMultiplier(b) * 10f;
+                return costA.CompareTo(costB);
+            });
+            
+            return alternativePoints[0];
+        }
+        
         return null;
     }
 
@@ -175,6 +295,10 @@ public class RouteManager : MonoBehaviour{
             }
         }
         return count;
+    }
+    
+    public List<RoviTransporter> GetRegisteredAGVs(){
+        return new List<RoviTransporter>(registeredAGVs);
     }
 
     public void MarkAreaBlocked(Vector3 position, float duration = 10f){

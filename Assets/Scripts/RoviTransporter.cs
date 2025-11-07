@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 using SimulationEvents;
+using System;
 
 public class RoviTransporter : Transporter {
     [Header("AGV Movement Settings")]
@@ -19,6 +20,12 @@ public class RoviTransporter : Transporter {
     [SerializeField] private int maxRerouteAttempts = 3;      
     [SerializeField] private float minimumRerouteDistance = 3f;  // min # of units traveled before we can re-check for congestion to reroute
     
+    [Header("Collision Avoidance")]
+    [SerializeField] private float avoidanceRadius = 2f;
+    [SerializeField] private float backingDistance = 1.5f; 
+    [SerializeField] private float backingSpeed = 1f;
+    [SerializeField] private float stuckTogetherThreshold = 1.5f;  // distance to consider AGVs stuck together
+    
     private Vector3 lastPosition;
     private float timeStopped;
     private const float STOP_THRESHOLD = 0.1f;  // minimum movement to consider AGV moving
@@ -30,6 +37,12 @@ public class RoviTransporter : Transporter {
     private bool isRerouting = false;
     private float distanceTraveled = 0f;
     private Vector3 lastRerouteCheckPosition;
+    private int avoidancePriority; 
+    private bool isBackingUp = false;
+    private float backingUpStartTime = 0f;
+    private const float MAX_BACKING_TIME = 3f;  // max time to back up before trying diff approach
+    private Vector3 backingTarget;
+    private static int nextPriority = 0;  // static counter for unique priorities
 
     public override void InitializeTransporter(float speed) { // speed may be a constant tho?
         SetTag();
@@ -61,7 +74,14 @@ public class RoviTransporter : Transporter {
         navAgent.angularSpeed = rotationSpeed;
         navAgent.stoppingDistance = stoppingDistance;
         navAgent.autoBraking = true;
-        navAgent.avoidancePriority = 50;     // medium priority for hospital corridors
+        
+        // assign unique avoidance priority to prevent deadlocks; lower numbers = higher priority (0-99 range)
+        avoidancePriority = nextPriority % 100;
+        nextPriority++;
+        navAgent.avoidancePriority = avoidancePriority;
+        
+        navAgent.obstacleAvoidanceType = ObstacleAvoidanceType.HighQualityObstacleAvoidance;
+        navAgent.radius = 0.5f;  // agent radius for avoidance calculations
         
         //  2D top-down (XY) adjustments: keep agent in XY plane
         navAgent.updateRotation = false; // we don't want 3D yaw rotation for top-down sprites
@@ -276,8 +296,13 @@ public class RoviTransporter : Transporter {
         
         TrackMovement();
         
+        //  handle collision avoidance and stuck situations
+        if (currentState == MovementState.Moving){
+            HandleCollisionAvoidance();
+        }
+        
         //  advanced routing: check for rerouting and path validation
-        if (currentState == MovementState.Moving && enableRerouting){
+        if (currentState == MovementState.Moving && enableRerouting && !isBackingUp){
             CheckForRerouting();
             ValidatePath();
         }
@@ -291,12 +316,15 @@ public class RoviTransporter : Transporter {
         
         if (distanceMoved < STOP_THRESHOLD) {
             timeStopped += Time.deltaTime;
-            if (timeStopped > STOP_TIME_THRESHOLD && isMoving && enableStuckDetection) {
+            if (timeStopped > STOP_TIME_THRESHOLD && isMoving && enableStuckDetection && !isBackingUp) {
                 if (enableDebugLogs)
                     Debug.LogWarning($"{gameObject.name} appears to be stuck!");
                 
+                if (IsStuckTogether()){
+                    HandleStuckTogether();
+                }
                 //  attempt to reroute if stuck
-                if (timeStopped > stuckTimeThreshold && enableRerouting && RouteManager.Instance != null){
+                else if (timeStopped > stuckTimeThreshold && enableRerouting && RouteManager.Instance != null){
                     AttemptReroute();
                 }
             }
@@ -307,6 +335,151 @@ public class RoviTransporter : Transporter {
         
         distanceTraveled += distanceMoved;
         lastPosition = transform.position;
+    }
+    
+    private void HandleCollisionAvoidance(){
+        if (isBackingUp){
+            HandleBackingUp();
+            return;
+        }
+        
+        List<RoviTransporter> nearbyAGVs = GetNearbyAGVs(avoidanceRadius);
+        
+        if (nearbyAGVs.Count > 0){
+            // check if we're heading towards another AGV
+            foreach (RoviTransporter otherAGV in nearbyAGVs){
+                if (otherAGV == this || otherAGV == null) continue;
+                
+                Vector3 toOther = (otherAGV.transform.position - transform.position);
+                float distance = toOther.magnitude;
+                
+                // if very close and both moving, apply avoidance
+                if (distance < stuckTogetherThreshold && otherAGV.GetCurrentState() == MovementState.Moving){
+                    Vector3 myDirection = navAgent.velocity.normalized;
+                    Vector3 otherDirection = otherAGV.navAgent.velocity.normalized;
+                    
+                    // if heading towards each other, one (lower priority)should yield
+                    if (Vector3.Dot(myDirection, toOther.normalized) > 0.5f && 
+                        Vector3.Dot(otherDirection, -toOther.normalized) > 0.5f){
+                        if (avoidancePriority > otherAGV.avoidancePriority){
+                            StartBackingUp();
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    private bool IsStuckTogether(){
+        List<RoviTransporter> nearbyAGVs = GetNearbyAGVs(stuckTogetherThreshold);
+        return nearbyAGVs.Count > 0;
+    }
+    
+    private void HandleStuckTogether(){
+        List<RoviTransporter> nearbyAGVs = GetNearbyAGVs(stuckTogetherThreshold);
+        
+        int lowestPriority = avoidancePriority;
+        foreach (RoviTransporter agv in nearbyAGVs){
+            if (agv != null && agv.avoidancePriority < lowestPriority){
+                lowestPriority = agv.avoidancePriority;
+            }
+        }
+        
+        if (avoidancePriority > lowestPriority){
+            StartBackingUp();
+        }
+    }
+
+    private List<RoviTransporter> GetNearbyAGVs(float radius){
+        List<RoviTransporter> nearby = new List<RoviTransporter>();
+        
+        if (RouteManager.Instance == null) return nearby;
+        
+        List<RoviTransporter> allAGVs = RouteManager.Instance.GetRegisteredAGVs();
+        foreach (RoviTransporter agv in allAGVs){
+            if (agv == null || agv == this || !agv.gameObject.activeInHierarchy) continue;
+            
+            float distance = Vector3.Distance(transform.position, agv.GetCurrentPosition());
+            if (distance <= radius){
+                nearby.Add(agv);
+            }
+        }
+        
+        return nearby;
+    }
+    
+    private void StartBackingUp(){
+        if (isBackingUp) return;
+        
+        isBackingUp = true;
+        backingUpStartTime = Time.time;
+        
+        Vector3 backDirection;
+        if (navAgent.velocity.magnitude > 0.1f){
+            backDirection = -navAgent.velocity.normalized;
+        }
+        else{
+            // if not moving, back away from destination
+            backDirection = (transform.position - destination).normalized;
+            if (backDirection.magnitude < 0.1f){
+                // if at destination, pick a random direction
+                backDirection = new Vector3(UnityEngine.Random.Range(-1f, 1f), UnityEngine.Random.Range(-1f, 1f), 0f).normalized;
+            }
+        }
+        
+        backingTarget = transform.position + backDirection * backingDistance;
+        backingTarget.z = 0f;
+        
+        NavMeshHit hit;
+        if (NavMesh.SamplePosition(backingTarget, out hit, 2f, NavMesh.AllAreas)){
+            backingTarget = hit.position;
+        }
+        
+        navAgent.ResetPath();
+        navAgent.speed = backingSpeed;
+        
+        if (enableDebugLogs)
+            Debug.Log($"{gameObject.name} backing up to let others pass");
+    }
+    
+    private void HandleBackingUp(){
+        if (Time.time - backingUpStartTime > MAX_BACKING_TIME){
+            StopBackingUp();
+            return;
+        }
+        
+        Vector3 direction = (backingTarget - transform.position).normalized;
+        float distanceToBackingTarget = Vector3.Distance(transform.position, backingTarget);
+        
+        if (distanceToBackingTarget > 0.2f){
+            if (!navAgent.pathPending && navAgent.remainingDistance < 0.5f){
+                navAgent.SetDestination(backingTarget);
+            }
+        }
+        else{
+            StopBackingUp();
+        }
+        
+        List<RoviTransporter> nearby = GetNearbyAGVs(stuckTogetherThreshold);
+        if (nearby.Count == 0 && Time.time - backingUpStartTime > 0.5f){
+            StopBackingUp();
+        }
+    }
+    
+    private void StopBackingUp(){
+        if (!isBackingUp) return;
+        
+        isBackingUp = false;
+        navAgent.speed = speed;
+        timeStopped = 0f;
+        
+        if (isMoving && destination != Vector3.zero){
+            navAgent.SetDestination(destination);
+        }
+        
+        if (enableDebugLogs)
+            Debug.Log($"{gameObject.name} finished backing up, resuming movement");
     }
 
     // check if rerouting is needed based on congestion or blocked paths
@@ -559,6 +732,10 @@ public class RoviTransporter : Transporter {
     // get current rerouting statistics
     public int GetRerouteAttempts(){
         return currentRerouteAttempts;
+    }
+    
+    public int GetAvoidancePriority(){
+        return avoidancePriority;
     }
 
     void OnDestroy(){
