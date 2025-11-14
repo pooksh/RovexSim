@@ -17968,9 +17968,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d8b2a65644387814e9d6f3077addf1f7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  enableDebugLogs: 0
+  enableDebugLogs: 1
   assignAlg: 0
-  inputTasks: {fileID: 4900000, guid: 899cbab576dc5204cace0f3305bc1359, type: 3}
+  inputTasks: {fileID: 0}
 --- !u!114 &1855602085
 MonoBehaviour:
   m_ObjectHideFlags: 0
