@@ -50,8 +50,7 @@ public class TaskGeneratorCustomInspector : Editor
                 return;
             }
 
-
-            // get all waypoint transforms in the scene (BAD IF MULTIPLE MAPS IN SCENE...MUST CHANGE LATER)
+            // get all waypoint transforms in the scene TODO: (BAD IF MULTIPLE MAPS IN SCENE...MUST CHANGE LATER)
             
             Transform[] waypoints = wpManager.GetAllWaypoints();
             StringBuilder newContent = new StringBuilder($"mapname\n{mapName}\nentryTime,origin,destination,id,description,priority,estimatedDuration,loadingTime\n");
@@ -99,6 +98,8 @@ public class TaskGeneratorCustomInspector : Editor
             File.WriteAllText(fullPath, newContent.ToString());
             AssetDatabase.RenameAsset(assetPath, $"{mapName}_{DateTime.Now.ToString("ddMMyyyy_hhmm")}");
             AssetDatabase.Refresh();
+
+            Debug.Log($"Generated {mapName} with {numTasks} random tasks.");
 
         }
         EditorGUILayout.LabelField("Tasklist Preset Generator");
@@ -154,12 +155,11 @@ public class TaskGeneratorCustomInspector : Editor
                 newContent.Append(line);
             }
 
-            // random times
-            // random task priority
-
             File.WriteAllText(fullPath, newContent.ToString());
             AssetDatabase.RenameAsset(assetPath, $"{mapName}_{DateTime.Now.ToString("ddMMyyyy_hhmm")}");
             AssetDatabase.Refresh();
+
+            Debug.Log($"Generated {mapName} with {numTasks} preset tasks.");
         }
     }
 }

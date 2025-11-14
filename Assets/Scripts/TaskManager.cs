@@ -19,7 +19,7 @@ public class TaskManager : MonoBehaviour
     private List<GameObject> transportersMaster;
     private LinkedList<GameObject> assignableTransporters;
     
-    public enum AssignmentAlgorithm { FirstAvailable, EarliestArrivalTime }   
+    public enum AssignmentAlgorithm { FirstAvailable, NearestDistance, EarliestArrivalTime }   
     [SerializeField] private AssignmentAlgorithm assignAlg;
     private delegate void ChosenAlgorithm();
     ChosenAlgorithm currentAssignmentMethod;
@@ -42,6 +42,7 @@ public class TaskManager : MonoBehaviour
     float loadingTime;
     List<string> coordinatesList;
     Task newtask;
+    TaskGenerator tg;
 
     private Regex csvSplitRegex = new Regex(
         @"
@@ -58,7 +59,14 @@ public class TaskManager : MonoBehaviour
     void Start()
     {
         if (inputTasks == null) {
-            Debug.LogError("No map/tasklist assigned on task manager");
+            tg = (TaskGenerator)FindObjectOfType(typeof(TaskGenerator));
+            if (tg == null) {
+                Debug.LogError("Task generator could not be found to import tasklist file from.");
+            }
+            inputTasks = tg.file;
+            if (inputTasks == null) {
+                Debug.LogError("No map/tasklist assigned on task manager or task generator");
+            }
         }
 
         unorderedTasksMaster = new List<Task>();
@@ -79,6 +87,7 @@ public class TaskManager : MonoBehaviour
 
         switch (assignAlg) {
             case AssignmentAlgorithm.FirstAvailable: currentAssignmentMethod = FirstAvailableNotBusyMethod; break;
+            case AssignmentAlgorithm.NearestDistance: currentAssignmentMethod = NearestDistanceMethod; break;
             case AssignmentAlgorithm.EarliestArrivalTime: currentAssignmentMethod = EarliestArrivalTimeMethod; break;
         }
 
@@ -246,7 +255,7 @@ public class TaskManager : MonoBehaviour
     // - find a transporter to assign the task
     // - assign the task to the transporter, mark assigned, add to assigned tasklist
 
-    private void FirstAvailableNotBusyMethod()
+    private void FirstAvailableNotBusyMethod() 
     {
         if (enteredTasks.Count == 0) {
             Debug.Log("there are no currently entered tasks");
@@ -263,6 +272,75 @@ public class TaskManager : MonoBehaviour
         }
         else {
             Debug.Log("there are no currently assignable transporters");
+        }
+    }
+    
+    private void NearestDistanceMethod()
+    {
+        if (enteredTasks.Count == 0) {
+            if (enableDebugLogs) {
+                Debug.Log("there are no currently entered tasks");
+            }
+            return;
+        }
+
+        if (assignableTransporters.Count == 0) {
+            if (enableDebugLogs) {
+                Debug.Log("there are no currently assignable transporters");
+            }
+            return;
+        }
+
+        // process tasks one by one, assigning each to the nearest available transporter; keep track of transporters that have been assigned tasks in this frame
+        HashSet<Transporter> assignedThisFrame = new HashSet<Transporter>();
+        
+        while (enteredTasks.Count > 0) {
+            Task currentTask = enteredTasks.Peek();
+            
+            if (currentTask.IsCompleted()) {
+                enteredTasks.Dequeue();
+                continue;
+            }
+
+            Transporter nearestPorter = null;
+            float nearestDistance = float.MaxValue;
+            GameObject nearestObj = null;
+
+            foreach (GameObject obj in assignableTransporters) {
+                Transporter porter = obj.GetComponent<Transporter>();
+                if (porter == null || porter.busy || !porter.IsAvailable()) {
+                    continue;
+                }
+                
+                if (assignedThisFrame.Contains(porter)) {
+                    continue;
+                }
+
+                Vector3 transporterPos = obj.transform.position;
+                
+                float distance = Vector3.Distance(transporterPos, currentTask.origin);
+                
+                if (distance < nearestDistance) {
+                    nearestDistance = distance;
+                    nearestPorter = porter;
+                    nearestObj = obj;
+                }
+            }
+
+            if (nearestPorter != null) {
+                enteredTasks.Dequeue(); 
+                AssignTask(currentTask, nearestPorter);
+                assignedThisFrame.Add(nearestPorter); 
+                if (enableDebugLogs) {
+                    Debug.Log($"Assigned task {currentTask.taskId} (origin: {currentTask.origin}) to transporter {nearestObj.name} at distance {nearestDistance:F2}");
+                }
+            }
+            else {
+                if (enableDebugLogs) {
+                    Debug.Log($"No available transporter found for task {currentTask.taskId}, waiting...");
+                }
+                break;
+            }
         }
     }
     
