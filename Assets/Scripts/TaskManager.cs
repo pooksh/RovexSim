@@ -31,6 +31,9 @@ public class TaskManager : MonoBehaviour
 
     LinkedListNode<GameObject> tempNode;
 
+    private RoviManager rovimgr;
+    private bool usingRoviManager = true;
+
     string map;
     TimeOfDay entry;
     Vector3 origin;
@@ -68,15 +71,18 @@ public class TaskManager : MonoBehaviour
                 Debug.LogError("No map/tasklist assigned on task manager or task generator");
             }
         }
+        if (usingRoviManager) {
+            rovimgr = GetComponent<RoviManager>();
+            if (rovimgr == null) {
+                Debug.LogError("Add RoviManager to the scene or uncheck using it.");
+            }
+            transportersMaster = rovimgr.GetTransporters();
+        }
+        else {
+            transportersMaster = new List<GameObject>(GameObject.FindGameObjectsWithTag("Transporter"));
+        }
 
-        unorderedTasksMaster = new List<Task>();
-        orderedTasksMaster = new Queue<Task>();
-        enteredTasks = new PriorityQueue<Task,float>();
-        assignedTasks = new List<Task>();
-        transportersMaster = new List<GameObject>(GameObject.FindGameObjectsWithTag("Transporter"));
         assignableTransporters = new LinkedList<GameObject>();
-
-        ImportTasks();
 
         tempNode = null;
         foreach (GameObject obj in transportersMaster) { // every node is not busy and available at the start of the day
@@ -85,12 +91,18 @@ public class TaskManager : MonoBehaviour
             porter.Node = tempNode;
         }
 
+        unorderedTasksMaster = new List<Task>();
+        orderedTasksMaster = new Queue<Task>();
+        enteredTasks = new PriorityQueue<Task,float>();
+        assignedTasks = new List<Task>();  
+
         switch (assignAlg) {
             case AssignmentAlgorithm.FirstAvailable: currentAssignmentMethod = FirstAvailableNotBusyMethod; break;
             case AssignmentAlgorithm.NearestDistance: currentAssignmentMethod = NearestDistanceMethod; break;
             case AssignmentAlgorithm.EarliestArrivalTime: currentAssignmentMethod = EarliestArrivalTimeMethod; break;
         }
 
+        ImportTasks();
     }
 
     private void ImportTasks()
