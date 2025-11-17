@@ -8,7 +8,8 @@ using SimulationEvents;
 public class PorterDemoController : MonoBehaviour
 {
     [Header("Porter Demo Settings")]
-    [SerializeField] private PorterTransporter[] porters;       
+    [SerializeField] private PorterTransporter[] porters;    
+    [SerializeField] private PatientMetrics[] patients;
     [SerializeField] private Transform[] waypoints;     
     [SerializeField] private float demoTaskInterval = 12f;     // time between demo tasks (longer than AGV)
     [SerializeField] private bool autoStartDemo = true;        // start demo automatically
@@ -18,6 +19,8 @@ public class PorterDemoController : MonoBehaviour
     
     private int currentWaypointIndex = 0;
     private int taskCounter = 0;
+
+    private TimeManager timemgr;
     
     void Start() {
         // find all PorterTransporter porters in the scene if not assigned
@@ -28,6 +31,11 @@ public class PorterDemoController : MonoBehaviour
         
         if (autoStartDemo) {
             StartCoroutine(DemoTaskLoop());
+        }
+        
+        timemgr = (TimeManager)FindObjectOfType(typeof(TimeManager));
+        if (timemgr == null) {
+            Debug.LogError("Could not find an object with time manager component. Please add an object with appropriate managers");
         }
     }
     
@@ -47,29 +55,44 @@ public class PorterDemoController : MonoBehaviour
     }
     
     private void AssignDemoTask() {
-        // find an available porter
-        PorterTransporter availablePorter = GetAvailablePorter();
-        
-        if (availablePorter != null && waypoints.Length >= 2) {
-            // create a task between two waypoints
-            Vector3 origin = waypoints[currentWaypointIndex].position;
-            Vector3 destination = waypoints[(currentWaypointIndex + 1) % waypoints.Length].position;
-            
-            string taskId = $"PorterDemoTask_{taskCounter++}";
-            string description = $"Manual transport from waypoint {currentWaypointIndex} to {(currentWaypointIndex + 1) % waypoints.Length}";
-            
-            // assign the task
-            availablePorter.AssignNewTask(origin, destination, taskId, description);
-            
-            // move to next waypoint for next task
-            currentWaypointIndex = (currentWaypointIndex + 1) % waypoints.Length;
-            
-            Debug.Log($"Assigned {taskId} to {availablePorter.gameObject.name}");
-        }
-        else if (availablePorter == null) {
-            Debug.Log("No available porters for task assignment");
-        }
+    // find an available porter
+    PorterTransporter availablePorter = GetAvailablePorter();
+
+    // added: also check that there are patients available
+    if (availablePorter != null && waypoints.Length >= 2 && patients.Length > 0)
+    {
+        // create a task between two waypoints
+        Vector3 origin = waypoints[currentWaypointIndex].position;
+        Vector3 destination = waypoints[(currentWaypointIndex + 1) % waypoints.Length].position;
+
+        // updated task details
+        string associatedMap = "WaypointsTest-PorterDemo";
+        string taskId = $"PatientTransport_{taskCounter++}";
+        string description = "Transport non-critical patient";
+        TimeOfDay entry = new TimeOfDay(timemgr.GetTimeNow());
+
+        // pick a random patient from the array
+        PatientMetrics patient = patients[Random.Range(0, patients.Length)];
+
+        // create a Task object (if using the Task class from SimulationEvents)
+        Task patientTask = new Task(origin, destination, associatedMap, entry, taskId, description);
+
+        // link the patient to the task
+        patient.AssignTask(patientTask);
+
+        // assign the task to the porter as before
+        availablePorter.AssignNewTask(patientTask);
+
+        Debug.Log($"Assigned {taskId} to {availablePorter.gameObject.name} for patient {patient.patientId}");
+
+        // move to next waypoint for next task
+        currentWaypointIndex = (currentWaypointIndex + 1) % waypoints.Length;
     }
+    else if (availablePorter == null)
+    {
+        Debug.Log("No available porters for task assignment");
+    }
+}
     
     private PorterTransporter GetAvailablePorter() {
         // find the first available porter
@@ -104,14 +127,16 @@ public class PorterDemoController : MonoBehaviour
     }
     
     private void AssignTaskToWaypoints(int originIndex, int destinationIndex) {
+        string associatedMap = "WaypointsTest-PorterDemo";
+        TimeOfDay entry = new TimeOfDay(timemgr.GetTimeNow());
         if (waypoints.Length > Mathf.Max(originIndex, destinationIndex)) {
             PorterTransporter availablePorter = GetAvailablePorter();
             if (availablePorter != null) {
                 Vector3 origin = waypoints[originIndex].position;
                 Vector3 destination = waypoints[destinationIndex].position;
                 string taskId = $"PorterManualTask_{taskCounter++}";
-                
-                availablePorter.AssignNewTask(origin, destination, taskId, $"Manual porter task from WP{originIndex} to WP{destinationIndex}");
+                                
+                availablePorter.AssignNewTask(origin, destination, associatedMap, entry, taskId, $"Manual porter task from WP{originIndex} to WP{destinationIndex}");
                 Debug.Log($"Manual porter task assigned: {taskId}");
             }
             else {

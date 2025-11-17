@@ -1,0 +1,8 @@
+mapname
+UFMap
+entryTime,origin,destination,id,description,priority,estimatedDuration,loadingTime
+09:11,-4.573693;2.00863,0.4918211;0.4534642,task-5,"From origin Waypoint (8) at (-4.57, 2.01, 0.00) to destination Waypoint (4) at (0.49, 0.45, 0.00) on map UFMap",1,,
+00:48,-1.906916;-2.23236,-1.018445;0.4534642,task-5,"From origin Waypoint (5) at (-1.91, -2.23, 0.00) to destination Waypoint (3) at (-1.02, 0.45, 0.00) on map UFMap",2,,
+04:27,0.4918211;0.4534642,-2.487893;2.045366,task-5,"From origin Waypoint (4) at (0.49, 0.45, 0.00) to destination Waypoint (9) at (-2.49, 2.05, 0.00) on map UFMap",1,,
+17:14,-1.018445;0.4534642,-4.573693;2.00863,task-5,"From origin Waypoint (3) at (-1.02, 0.45, 0.00) to destination Waypoint (8) at (-4.57, 2.01, 0.00) on map UFMap",1,,
+03:49,-1.906916;-2.23236,0.4918211;0.4534642,task-5,"From origin Waypoint (5) at (-1.91, -2.23, 0.00) to destination Waypoint (4) at (0.49, 0.45, 0.00) on map UFMap",2,,

@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 using SimulationEvents;
+using System;
 
 public class PorterTransporter : Transporter {
     [Header("Porter Movement Settings")]
     [SerializeField] private float stoppingDistance = 1.0f;  // distance at which porter considers destination reached (larger than AGV)
     [SerializeField] private float rotationSpeed = 180f;     // degrees per second for rotation (faster than AGV)
     [SerializeField] private bool enableDebugLogs = true;    // enable debug logging for movement
-    [SerializeField] private float porterWalkingSpeed = 1.5f; // slower than AGV speed for realism. FIX later
+    [SerializeField] private float porterWalkingSpeed = 1.5f; // slower than AGV speed for realism
     
     private Vector3 lastPosition;
     private float timeStopped;
@@ -17,6 +18,9 @@ public class PorterTransporter : Transporter {
     private const float STOP_TIME_THRESHOLD = 3f;   // time in seconds to consider porter stopped (longer than AGV)
 
     public override void InitializeTransporter(float speed) {
+        SetTag();
+        node = null;
+        
         this.speed = speed > 0 ? speed : porterWalkingSpeed;  // use provided speed or default porter speed
         this.busy = false;
         this.available = true;
@@ -45,6 +49,14 @@ public class PorterTransporter : Transporter {
         navAgent.stoppingDistance = stoppingDistance;
         navAgent.autoBraking = true;
         navAgent.avoidancePriority = 75;     // higher priority than AGVs (porters have right of way)
+        navAgent.obstacleAvoidanceType = ObstacleAvoidanceType.HighQualityObstacleAvoidance;
+        navAgent.radius = 0.5f;  // agent radius for avoidance calculations
+        
+        navAgent.updateRotation = false; 
+        navAgent.updateUpAxis = false;
+        Vector3 clampedStart = transform.position;
+        clampedStart.z = 0f;
+        transform.position = clampedStart;
         
         if (enableDebugLogs)
             Debug.Log($"Initialized PorterTransporter: {gameObject.name} with speed {this.speed}");
@@ -88,7 +100,8 @@ public class PorterTransporter : Transporter {
             return;
         }
         
-        // set destination and start moving
+        // set destination and start moving (clamp Z for XY plane)
+        targetPosition.z = 0f;
         destination = targetPosition;
         navAgent.SetDestination(destination);
         isMoving = true;
@@ -211,6 +224,13 @@ public class PorterTransporter : Transporter {
         // update position tracking
         UpdatePosition();
         
+        // enforce xy plane (z=0) to work with 2D navmesh on xy
+        if (Mathf.Abs(transform.position.z) > 0f) {
+            Vector3 fixedPos = transform.position;
+            fixedPos.z = 0f;
+            transform.position = fixedPos;
+        }
+        
         // check if porter has reached destination
         if (isMoving && HasReachedDestination()) {
             isMoving = false;
@@ -230,7 +250,7 @@ public class PorterTransporter : Transporter {
             timeStopped += Time.deltaTime;
             if (timeStopped > STOP_TIME_THRESHOLD && isMoving) {
                 if (enableDebugLogs)
-                    Debug.LogWarning($"{gameObject.name} appears to be stuck");
+                    Debug.LogWarning($"{gameObject.name} appears to be stuck!");
             }
         }
         else {
@@ -256,9 +276,9 @@ public class PorterTransporter : Transporter {
         }
     }
     
-    public void AssignNewTask(Vector3 origin, Vector3 destination, string taskId = "", string description = "") {
+    public void AssignNewTask(Vector3 origin, Vector3 destination, string associatedMap = "None", TimeOfDay entryTime = null, string taskId = "", string description = "") {
         // create and assign a new task
-        Task newTask = new Task(origin, destination, taskId, description);
+        Task newTask = new Task(origin, destination, associatedMap, entryTime, taskId, description);
         AddTask(newTask);
         
         if (enableDebugLogs)
@@ -273,16 +293,66 @@ public class PorterTransporter : Transporter {
             Debug.Log($"{gameObject.name} assigned task: {task.taskId}");
     }
     
+    // assign task using waypoint indices
+    public void AssignTaskByWaypoints(int originWaypointIndex, int destinationWaypointIndex, string associatedMap = "None", TimeOfDay entryTime = null,
+        string taskId = "", string description = ""){
+        if (WaypointManager.Instance == null){
+            Debug.LogError($"WaypointManager not found! Cannot assign task by waypoints.");
+            return;
+        }
+
+        Task task = WaypointManager.Instance.CreateTask(originWaypointIndex, destinationWaypointIndex, associatedMap, entryTime, taskId, description);
+        if (task != null){
+            AssignNewTask(task);
+        }
+    }
+
+    // assign task using waypoint names
+    public void AssignTaskByWaypoints(string originWaypointName, string destinationWaypointName,
+        string associatedMap = "None", TimeOfDay entryTime = null, string taskId = "", string description = ""){
+        if (WaypointManager.Instance == null){
+            Debug.LogError($"WaypointManager not found! Cannot assign task by waypoint names.");
+            return;
+        }
+
+        Task task = WaypointManager.Instance.CreateTask(originWaypointName, destinationWaypointName, associatedMap, entryTime, taskId, description);
+        if (task != null){
+            AssignNewTask(task);
+        }
+    }
+
+    // assign task from current position to waypoint index
+    public void AssignTaskToWaypoint(int destinationWaypointIndex, string assignedMap = "None", TimeOfDay entryTime = null, string taskId = "", string description = ""){
+        if (WaypointManager.Instance == null){
+            Debug.LogError($"WaypointManager not found! Cannot assign task to waypoint.");
+            return;
+        }
+
+        Task task = WaypointManager.Instance.CreateTaskFromPosition(transform.position, destinationWaypointIndex, assignedMap, entryTime, taskId, description);
+        if (task != null){
+            AssignNewTask(task);
+        }
+    }
+
+    // assign task from current position to waypoint name
+    public void AssignTaskToWaypoint(string destinationWaypointName, string assignedMap = "None", TimeOfDay entryTime = null, string taskId = "", string description = ""){
+        if (WaypointManager.Instance == null){
+            Debug.LogError($"WaypointManager not found! Cannot assign task to waypoint.");
+            return;
+        }
+
+        Task task = WaypointManager.Instance.CreateTaskFromPosition(transform.position, destinationWaypointName, assignedMap, entryTime, taskId, description);
+        if (task != null){
+            AssignNewTask(task);
+        }
+    }
+    
     public Vector3 GetCurrentPosition() {
         return transform.position;
     }
     
     public MovementState GetCurrentState() {
         return currentState;
-    }
-    
-    public bool IsAvailable() {
-        return available && !busy && currentState == MovementState.Idle;
     }
     
     public int GetTaskQueueCount() {
@@ -293,9 +363,13 @@ public class PorterTransporter : Transporter {
         // emergency stop--immediately stop all movement and clear task queue
         StopMovement();
         assignedTasks.Clear();
+        
+        // reset availability state
+        busy = false;
+        available = true;
         SetMovementState(MovementState.Idle);
         
         if (enableDebugLogs)
-            Debug.Log($"{gameObject.name} EMERGENCY STOP activated");
+            Debug.Log($"{gameObject.name} EMERGENCY STOP activated - ready for new tasks");
     }
 }

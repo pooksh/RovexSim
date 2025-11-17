@@ -14,11 +14,10 @@ namespace SimulationEvents {
         protected bool isEntered; // can it be seen by transporters?
         protected bool isAssigned; // is it assigned to one particular transporter?
         protected bool isCompleted; // has the event completed?
-        // private Time entryTime;
-        // private Time startTime;
-        // private Time endTime; // arrival time in the case of task
-
-        // this Time structure is temp beacuse we dont have the time simulation figured out yet. 
+        protected TimeOfDay entryTime;
+        protected TimeOfDay startTime;
+        protected TimeOfDay endTime { get; private set; } // arrival time in the case of task
+        protected string associatedMap;
 
         protected Event () {
             isEntered = false;
@@ -30,17 +29,19 @@ namespace SimulationEvents {
             isEntered = true;
         }
 
-        public void MarkAssigned() { // to be called by transporter
+        public void MarkAssigned() { // to be called by manager
             isAssigned = true;
         }
 
-        public void MarkCompleted() {
+        public void MarkCompleted() { // to be called by transporter
             isCompleted = true;
         }
 
         public bool IsCompleted() {
             return isCompleted;
         }
+
+        public TimeOfDay EntryTime => entryTime; // public getter
 
     }
 
@@ -59,7 +60,9 @@ namespace SimulationEvents {
         public float requestTime;             // When the task was requested
         public float deadline;                // When the task must be completed
         
-        public Task(Vector3 origin, Vector3 destination, string taskId = "", string description = "") {
+        public Task(Vector3 origin, Vector3 destination, string associatedMap = "None", TimeOfDay entryTime = null, string taskId = "", string description = "") {
+            this.associatedMap = associatedMap;
+            this.entryTime = entryTime ?? new TimeOfDay(0,0);
             this.origin = origin;
             this.destination = destination;
             this.taskId = taskId;
@@ -72,8 +75,10 @@ namespace SimulationEvents {
             this.deadline = requestTime + estimatedDuration;
         }
         
-        public Task(Vector3 origin, Vector3 destination, string taskId, string description, 
+        public Task(Vector3 origin, Vector3 destination, string associatedMap, TimeOfDay entryTime, string taskId, string description, 
                    float priority, float estimatedDuration, float loadingTime = 2f) {
+            this.associatedMap = associatedMap;
+            this.entryTime = entryTime;
             this.origin = origin;
             this.destination = destination;
             this.taskId = taskId;
@@ -98,13 +103,31 @@ namespace SimulationEvents {
         public float GetRemainingTime() {
             return deadline - Time.time;
         }
+        
+        public string GetSmallStringVariables() {
+            return "Map: " + associatedMap + ", Entry Time: " + entryTime.StringTime() + ", Origin: " + origin + ", Destination: " + destination;
+        }
+
+        public string GetStringVariables() {
+            return "Map: " + associatedMap + ", Entry Time: " + entryTime.StringTime() + ", Origin: " + origin + ", Destination: " + destination + ", TaskID: " + taskId + ", Description: " + description + ",\n Priority: " + priority + ", Estimated Duration: " + estimatedDuration + ", Requires Loading: " + requiresLoading + ", Loading Time: " + loadingTime + ", Request Time: " + requestTime + ", Deadline: " + deadline;
+        }
+
+        public void SmallDebugPrintVariables() {
+            Debug.Log(GetSmallStringVariables());
+        }
+
+        public void DebugPrintVariables() {
+            Debug.Log(GetStringVariables());
+        }
+
+
     }
 
     public class Downtime : Event {
         // transportation downtimes; when downtime is active, the transporter is disabled
 
         public Downtime() {
-            // implicit call to Event()
+
         }
         
     }
