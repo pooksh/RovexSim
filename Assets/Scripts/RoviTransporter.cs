@@ -256,7 +256,7 @@ public class RoviTransporter : Transporter {
     
     public void AssignNewTask(Vector3 origin, Vector3 destination, string taskId = "", string description = "") {
         //  create and assign a new task
-        Task newTask = new Task(origin, destination, taskId, description);
+        Task newTask = new Task(origin: origin, destination: destination, taskId: taskId, description: description);
         AddTask(newTask);
         
         if (enableDebugLogs)
