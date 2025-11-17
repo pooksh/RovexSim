@@ -99,7 +99,7 @@ public class TaskGeneratorCustomInspector : Editor
             AssetDatabase.RenameAsset(assetPath, $"{mapName}_{DateTime.Now.ToString("ddMMyyyy_hhmm")}");
             AssetDatabase.Refresh();
 
-            Debug.Log($"Generated {mapName} with {numTasks} random tasks.");
+            Debug.Log($"Generated {mapName} with {numRandomTasks} random tasks.");
 
         }
         EditorGUILayout.LabelField("Tasklist Preset Generator");
