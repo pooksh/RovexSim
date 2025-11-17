@@ -8,8 +8,14 @@ using System;
 public class RoviTransporter : Transporter {
     [Header("AGV Movement Settings")]
     [SerializeField] private float stoppingDistance = 0.5f;  // distance at which AGV considers destination reached
-    [SerializeField] private float rotationSpeed = 90f;      // degrees per second for rotation
+    [SerializeField] private float rotationSpeed = 60f;      // degrees per second for rotation (reduced for smoother turns)
     [SerializeField] private bool enableDebugLogs = true;    // enable debug logging for movement
+    
+    [Header("Hospital Corridor Behavior")]
+    [SerializeField] private bool enableRightSideFollowing = true;  // stick to right side of corridors
+    [SerializeField] private float rightSideOffset = 0.5f;          // distance to offset from center to right side
+    [SerializeField] private float pathSmoothingDistance = 1.5f;    // distance to look ahead for path smoothing
+    [SerializeField] private float maxPathDeviation = 0.3f;         // maximum deviation from smoothed path
     
     [Header("Advanced Routing")]
     [SerializeField] private bool enableRerouting = true;
@@ -43,6 +49,10 @@ public class RoviTransporter : Transporter {
     private const float MAX_BACKING_TIME = 3f;  // max time to back up before trying diff approach
     private Vector3 backingTarget;
     private static int nextPriority = 0;  // static counter for unique priorities
+    
+    // Path smoothing and right-side following
+    private float pathUpdateInterval = 0.2f;  // update path offset every 0.2 seconds
+    private float lastPathUpdate = 0f;
 
     public override void InitializeTransporter(float speed) { // speed may be a constant tho?
         SetTag();
@@ -70,7 +80,7 @@ public class RoviTransporter : Transporter {
         }
         
         navAgent.speed = speed;
-        navAgent.acceleration = speed * 2f; 
+        navAgent.acceleration = speed * 1.5f;  // reduced acceleration for smoother movement
         navAgent.angularSpeed = rotationSpeed;
         navAgent.stoppingDistance = stoppingDistance;
         navAgent.autoBraking = true;
@@ -299,6 +309,12 @@ public class RoviTransporter : Transporter {
         //  handle collision avoidance and stuck situations
         if (currentState == MovementState.Moving){
             HandleCollisionAvoidance();
+            
+            // Apply right-side corridor following and path smoothing
+            if (enableRightSideFollowing && Time.time - lastPathUpdate > pathUpdateInterval) {
+                ApplyRightSidePathOffset();
+                lastPathUpdate = Time.time;
+            }
         }
         
         //  advanced routing: check for rerouting and path validation
@@ -744,5 +760,42 @@ public class RoviTransporter : Transporter {
             RouteManager.Instance.UnregisterAGV(this);
         }
     }
+    
+    // applies right-side offset to navmesh path to keep AGVs on the right side of corridors
+    private void ApplyRightSidePathOffset() {
+        if (navAgent == null || !navAgent.hasPath || navAgent.path.corners.Length < 2) return;
+        
+        float distanceToDestination = navAgent.remainingDistance;
+        if (distanceToDestination < stoppingDistance * 3f) {
+            return; 
+        }
+        
+        NavMeshPath currentPath = navAgent.path;
+        Vector3 nextWaypoint = currentPath.corners[1];
+
+        Vector3 direction = (nextWaypoint - transform.position);
+        float distance = direction.magnitude;
+        
+        if (distance < 0.1f) return;
+        
+        direction.Normalize();
+        
+        //  right side vector (perpendicular to direction, pointing right)
+        //  in 2D top-down view -> if direction is (x, y), right side is (-y, x)
+        Vector3 rightVector = new Vector3(-direction.y, direction.x, 0f);
+        
+        Vector3 currentPos = transform.position;
+        Vector3 rightOffset = rightVector * rightSideOffset * 0.1f; 
+        Vector3 offsetPos = currentPos + rightOffset;
+        
+        NavMeshHit hit;
+        if (NavMesh.SamplePosition(offsetPos, out hit, 0.3f, NavMesh.AllAreas)) {
+            if (distanceToDestination > stoppingDistance * 4f && 
+                Vector3.Distance(hit.position, currentPos) < rightSideOffset * 0.5f) {
+                transform.position = Vector3.Lerp(currentPos, hit.position, 0.1f);
+            }
+        }
+    }
+    
 
 }

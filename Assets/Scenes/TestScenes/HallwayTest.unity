@@ -232,6 +232,10 @@ MonoBehaviour:
   stoppingDistance: 0.5
   rotationSpeed: 90
   enableDebugLogs: 1
+  enableRightSideFollowing: 1
+  rightSideOffset: 0.5
+  pathSmoothingDistance: 1.5
+  maxPathDeviation: 0.3
   enableRerouting: 1
   enableStuckDetection: 1
   rerouteCheckInterval: 1
@@ -17008,6 +17012,7 @@ MonoBehaviour:
   - {fileID: 569501722}
   - {fileID: 1915227921}
   - {fileID: 1390752398}
+  numRandomTasks: 0
 --- !u!1 &1525595887
 GameObject:
   m_ObjectHideFlags: 0
@@ -18316,7 +18321,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &2019773567
 Transform:
   m_ObjectHideFlags: 0
@@ -18351,6 +18356,10 @@ MonoBehaviour:
   stoppingDistance: 0.5
   rotationSpeed: 90
   enableDebugLogs: 1
+  enableRightSideFollowing: 1
+  rightSideOffset: 0.5
+  pathSmoothingDistance: 1.5
+  maxPathDeviation: 0.3
   enableRerouting: 1
   enableStuckDetection: 1
   rerouteCheckInterval: 1
