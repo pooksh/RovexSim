@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Waypoint
   - Transporter
+  - Spawnpoint
   layers:
   - Default
   - TransparentFX
