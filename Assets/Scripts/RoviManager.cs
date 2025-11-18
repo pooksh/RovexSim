@@ -36,9 +36,9 @@ public class RoviManager : MonoBehaviour
         }
 
         
-        GameObject parent = GameObject.Find("RoviTransporters");
-        if (parent == null) {
-            Debug.Log("Could not find RoviTransporters object to add Rovi under, will add to root.");
+        GameObject[] parents = GameObject.FindGameObjectsWithTag("RoviParent");
+        if (parent == null || parent.Length = 0) {
+            Debug.LogError("Could not find RoviTransporters object to add Rovi under.");
         }
 
         rovis = new List<GameObject>();
