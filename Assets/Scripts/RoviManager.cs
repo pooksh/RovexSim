@@ -11,9 +11,9 @@ public class RoviManager : MonoBehaviour
     public int numRovi = 1;
     public float speed = 2.5f;
     public string map = "UFMap";
-    public List<GameObject> rovis;
+    private List<GameObject> rovis;
     private InfoTransfer transferData;
-    public bool initialized = false;
+    private bool initialized = false;
 
     void Awake()
     {
@@ -36,9 +36,9 @@ public class RoviManager : MonoBehaviour
         }
 
         
-        GameObject[] parents = GameObject.FindGameObjectsWithTag("RoviParent");
-        if (parent == null || parent.Length = 0) {
-            Debug.LogError("Could not find RoviTransporters object to add Rovi under.");
+        GameObject parent = GameObject.Find("RoviTransporters");
+        if (parent == null) {
+            Debug.Log("Could not find RoviTransporters object to add Rovi under, will add to root.");
         }
 
         rovis = new List<GameObject>();

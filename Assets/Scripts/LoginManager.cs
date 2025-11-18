@@ -60,7 +60,7 @@ public class LoginManager : MonoBehaviour
                 PlayerPrefs.Save();
 
                 // Load the next scene
-                UnityEngine.SceneManagement.SceneManager.LoadScene("SimulationScene");
+                UnityEngine.SceneManagement.SceneManager.LoadScene("OptionsScene");
             }
             else
             {
