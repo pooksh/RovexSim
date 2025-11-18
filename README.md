@@ -12,7 +12,7 @@ Run the following command to build the backend API and SQL containers:
 
 Open a separate cmd/PS and cd to ..\Backend\src\docker-compose\init-db\
 
-Run the following commands to initialize an empty database:
+Run the following commands to install sqlcmd and initialize an empty database:
 
 `winget install sqlcmd`
 
