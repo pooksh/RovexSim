@@ -1,0 +1,71 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using System;
+
+public class RoviManager : MonoBehaviour
+{
+    [SerializeField] private bool usingOptions = true;
+    [SerializeField] private GameObject roviPrefab;
+    [SerializeField] private bool enableDebugLogs;
+    public int numRovi = 1;
+    public float speed = 2.5f;
+    public string map = "UFMap";
+    public List<GameObject> rovis;
+    private InfoTransfer transferData;
+    public bool initialized = false;
+
+    void Awake()
+    {
+        if (roviPrefab == null) {
+            Debug.LogError("Please reference a Rovi prefab in the inspector.");
+        }
+
+        if (usingOptions) {
+            transferData = (InfoTransfer)FindObjectOfType(typeof(InfoTransfer));
+            if (transferData == null) {
+                Debug.LogError("Object with InfoTransfer component (which transfers information between scenes) cannot be found. Do you need to uncheck Using Options?");
+            }
+
+            if (transferData.numRovis == 0 || transferData.speed == 0 || transferData.map == null) {
+                Debug.LogError("Some or all data is not valid from the scene transfer");
+            }
+            numRovi = transferData.numRovis;
+            speed = transferData.speed;
+            map = transferData.map;
+        }
+
+        
+        GameObject[] parents = GameObject.FindGameObjectsWithTag("RoviParent");
+        if (parent == null || parent.Length = 0) {
+            Debug.LogError("Could not find RoviTransporters object to add Rovi under.");
+        }
+
+        rovis = new List<GameObject>();
+        for (int i = 0; i < numRovi; i++) {
+            GameObject obj = Instantiate(roviPrefab);
+            if (parent != null)
+            {
+                obj.transform.SetParent(parent.transform, true);
+            }
+            obj.name = $"Rovi ({i})";
+            
+            RoviTransporter newRovi = obj.GetComponent<RoviTransporter>();
+            newRovi.InitializeTransporter(speed);
+            rovis.Add(obj);
+        }
+        initialized = true;
+    }
+
+    public List<GameObject> GetTransporters() {
+
+        if (initialized) {
+            return rovis;
+        }
+        else {
+            Debug.LogError($"Rovis failed to initialize.");
+            return null;
+        }
+    }
+
+}
