@@ -1,0 +1,36 @@
+version: "3.9"
+
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: sim-sql
+    restart: always
+    environment:
+      SA_PASSWORD: "YourStrong!Pass123"
+      ACCEPT_EULA: "Y"
+    ports:
+      - "1433:1433"
+    volumes:
+      - sql_data:/var/opt/mssql
+      - ./init-db:/docker-entrypoint-initdb.d   # <-- auto-run SQL scripts
+
+  api:
+    build:
+      context: ..   # points to src/ containing Dockerfile & csproj
+      dockerfile: Dockerfile
+    container_name: sim-api
+    depends_on:
+      - sqlserver
+    ports:
+      - "5000:5000"
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Development"
+      Jwt__Key: "this_is_a_super_secret_key_change_me"
+      ConnectionStrings__SimulationDB: "Server=sqlserver;Database=SimDB;User Id=sa;Password=YourStrong!Pass123;TrustServerCertificate=true;"
+      ASPNETCORE_URLS: ENV ASPNETCORE_URLS=http://+:5000;http://0.0.0.0:5000
+
+    volumes:
+      - ../appsettings.json:/app/appsettings.json
+
+volumes:
+  sql_data:

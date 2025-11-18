@@ -1,0 +1,59 @@
+name: dockercompose17996058660293281695
+services:
+  api:
+    build:
+      context: C:\Users\bdrum\Documents\Education\Senior\Code\VS\UnitySimBackend\src
+      dockerfile: Dockerfile
+    container_name: sim-api
+    depends_on:
+      sqlserver:
+        condition: service_started
+        required: true
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:5000
+      ConnectionStrings__DefaultConnection: Server=sqlserver;Database=SimDB;User Id=sa;Password=YourStrong!Pass123;TrustServerCertificate=true;
+      Jwt__Key: this_is_a_super_secret_key_change_me
+    networks:
+      default: null
+    ports:
+      - mode: ingress
+        target: 5000
+        published: "5000"
+        protocol: tcp
+    volumes:
+      - type: bind
+        source: C:\Users\bdrum\Documents\Education\Senior\Code\VS\UnitySimBackend\src\appsettings.json
+        target: /app/appsettings.json
+        bind:
+          create_host_path: true
+  sqlserver:
+    container_name: sim-sql
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: YourStrong!Pass123
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    networks:
+      default: null
+    ports:
+      - mode: ingress
+        target: 1433
+        published: "1433"
+        protocol: tcp
+    restart: always
+    volumes:
+      - type: volume
+        source: sql_data
+        target: /var/opt/mssql
+        volume: {}
+      - type: bind
+        source: C:\Users\bdrum\Documents\Education\Senior\Code\VS\UnitySimBackend\src\docker-compose\init-db
+        target: /docker-entrypoint-initdb.d
+        bind:
+          create_host_path: true
+networks:
+  default:
+    name: dockercompose17996058660293281695_default
+volumes:
+  sql_data:
+    name: dockercompose17996058660293281695_sql_data

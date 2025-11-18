@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.Docker.Sdk">
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>6587fd10-9f47-4035-99dd-af4c20efdc3a</ProjectGuid>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ProjectVersion>2.1</ProjectVersion>
+    <DockerTargetOS>Linux</DockerTargetOS>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="docker-compose.yml" />
+    <None Include="docker-compose.override.yml" Condition="Exists('docker-compose.override.yml')" />
+  </ItemGroup>
+</Project>

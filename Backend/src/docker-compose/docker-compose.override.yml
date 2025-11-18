@@ -1,0 +1,6 @@
+services:
+  api:
+    ports:
+      - "5000:5000"
+    environment:
+      ASPNETCORE_URLS: "http://+:5000"
