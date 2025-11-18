@@ -239,6 +239,10 @@ MonoBehaviour:
   pathValidationInterval: 2
   maxRerouteAttempts: 3
   minimumRerouteDistance: 3
+  avoidanceRadius: 2
+  backingDistance: 1.5
+  backingSpeed: 1
+  stuckTogetherThreshold: 1.5
 --- !u!4 &65779067
 Transform:
   m_ObjectHideFlags: 0
@@ -18994,6 +18998,10 @@ MonoBehaviour:
   pathValidationInterval: 2
   maxRerouteAttempts: 3
   minimumRerouteDistance: 3
+  avoidanceRadius: 2
+  backingDistance: 1.5
+  backingSpeed: 1
+  stuckTogetherThreshold: 1.5
 --- !u!1 &2097701520
 GameObject:
   m_ObjectHideFlags: 0
