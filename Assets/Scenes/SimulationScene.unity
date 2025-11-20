@@ -2474,7 +2474,7 @@ Transform:
   m_GameObject: {fileID: 127459905}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.03, y: -0.54, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -4364,7 +4364,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &781300869
 Transform:
   m_ObjectHideFlags: 0
@@ -18561,7 +18561,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &855073518
 Transform:
   m_ObjectHideFlags: 0
@@ -18571,7 +18571,7 @@ Transform:
   m_GameObject: {fileID: 855073517}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -1.0619502, y: -1.2262454, z: -1374.8488}
+  m_LocalPosition: {x: 1.8, y: -1.2262454, z: -1374.8488}
   m_LocalScale: {x: 1.3606, y: 1.3606, z: 1.3606}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -23835,14 +23835,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 07ab67b1edd518f4d8db53d1680f57cb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  file: {fileID: 4900000, guid: f4a8b670f1548e5438fbae1f0295d019, type: 3}
+  file: {fileID: 4900000, guid: ed9d64f8bc8688346b2888bc0932bff4, type: 3}
   wpmgr: {fileID: 1855602085}
   originWaypoints:
-  - {fileID: 0}
-  - {fileID: 0}
+  - {fileID: 1865731387}
+  - {fileID: 1032488436}
+  - {fileID: 19525649}
+  - {fileID: 592022960}
+  - {fileID: 1032488436}
   destinationWaypoints:
-  - {fileID: 0}
-  - {fileID: 0}
+  - {fileID: 1032488436}
+  - {fileID: 1303138185}
+  - {fileID: 1594439100}
+  - {fileID: 883052914}
+  - {fileID: 96214517}
   numRandomTasks: 5
 --- !u!1 &1525595887
 GameObject:
@@ -30451,6 +30457,7 @@ GameObject:
   - component: {fileID: 1855602086}
   - component: {fileID: 1855602084}
   - component: {fileID: 1855602085}
+  - component: {fileID: 1855602087}
   m_Layer: 0
   m_Name: Managers
   m_TagString: Untagged
@@ -30503,8 +30510,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   enableDebugLogs: 1
-  assignAlg: 0
-  inputTasks: {fileID: 4900000, guid: f4a8b670f1548e5438fbae1f0295d019, type: 3}
+  assignAlg: 1
+  inputTasks: {fileID: 4900000, guid: ed9d64f8bc8688346b2888bc0932bff4, type: 3}
+  roviManager: {fileID: 0}
+  porterManager: {fileID: 0}
+  useRoviManager: 1
+  usePorterManager: 1
+  useTagFallback: 0
 --- !u!114 &1855602085
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -30542,11 +30554,29 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d19810da1200e674689bda45557b9c5e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  usingOptions: 1
+  usingOptions: 0
   roviPrefab: {fileID: 648471182916351915, guid: 4d87be96c386b49488a897328333ba21, type: 3}
   enableDebugLogs: 1
   numRovi: 3
   speed: 2.5
+  map: UFMap
+--- !u!114 &1855602087
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1855602081}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1b93be0b3b2389f4ba0770b4d696a7ae, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  usingOptions: 0
+  porterPrefab: {fileID: 2841076760461298133, guid: fddaa11ca2f717f4aabd56b78fd9d3b7, type: 3}
+  enableDebugLogs: 1
+  numPorters: 1
+  speed: 1.5
   map: UFMap
 --- !u!1 &1860320406
 GameObject:

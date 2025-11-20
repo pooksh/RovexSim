@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 
-public class RoviManager : MonoBehaviour
+public class RoviManager : MonoBehaviour, ITransporterManager
 {
     [SerializeField] private bool usingOptions = true;
     [SerializeField] private GameObject roviPrefab;
@@ -58,7 +58,6 @@ public class RoviManager : MonoBehaviour
     }
 
     public List<GameObject> GetTransporters() {
-
         if (initialized) {
             return rovis;
         }
@@ -66,6 +65,10 @@ public class RoviManager : MonoBehaviour
             Debug.LogError($"Rovis failed to initialize.");
             return null;
         }
+    }
+
+    public bool IsInitialized() {
+        return initialized;
     }
 
 }
