@@ -10,7 +10,7 @@ public class PorterManager : MonoBehaviour, ITransporterManager
     [SerializeField] private bool enableDebugLogs;
     public int numPorters = 1;
     public float speed = 1.5f;
-    public string map = "UFMap";
+    public string map = "UFMap2";
     private List<GameObject> porters;
     private InfoTransfer transferData;
     private bool initialized = false;
@@ -25,17 +25,17 @@ public class PorterManager : MonoBehaviour, ITransporterManager
         if (usingOptions) {
             transferData = (InfoTransfer)FindObjectOfType(typeof(InfoTransfer));
             if (transferData == null) {
-                Debug.LogError("Object with InfoTransfer component (which transfers information between scenes) cannot be found. Do you need to uncheck Using Options?");
+                Debug.LogError("Object with InfoTransfer component (which transfers information between scenes) cannot be found. Using defaults.");
             }
             else {
-                if (transferData.numRovis > 0) {
-                    numPorters = transferData.numRovis; 
+                if (transferData.GetNumPorters() > 0) {
+                    numPorters = transferData.GetNumPorters(); 
                 }
-                if (transferData.speed > 0) {
-                    speed = transferData.speed;
+                if (transferData.GetRoviSpeed() > 0) {
+                    speed = transferData.GetRoviSpeed();
                 }
-                if (transferData.map != null) {
-                    map = transferData.map;
+                if (transferData.GetMap() != null) {
+                    map = transferData.GetMap();
                 }
             }
         }

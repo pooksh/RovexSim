@@ -7,7 +7,7 @@ using UnityEngine.UI;
 
 public class DisplayValue : MonoBehaviour
 {
-    [SerializeField] private bool isAMRCount;
+    public bool isFloat;
     private TMP_Text display;
     private string value;
     private Slider slider;
@@ -15,31 +15,22 @@ public class DisplayValue : MonoBehaviour
     
     void Start()
     {
-        transferData = (InfoTransfer)FindObjectOfType(typeof(InfoTransfer));
-        if (transferData == null) {
-            Debug.LogError("Object which transfers information between scenes cannot be found");
-        }
         display = GetComponentInChildren<TMP_Text>();
         slider = GetComponent<Slider>();
-        if (isAMRCount) {
-            UpdateDisplay(slider.minValue.ToString());
-            transferData.UpdateNumRovi((int)slider.minValue);
+        if (isFloat) {
+            UpdateDisplay(slider.minValue.ToString("0.00"));
         }
         else {
-            UpdateDisplay(slider.minValue.ToString("0.00"));
-            transferData.UpdateSpeed(slider.minValue);
+            UpdateDisplay(slider.minValue.ToString());
         }
-
     }
 
     public void OnValueChanged(float newValue) {
-        if (isAMRCount) {
-            value = newValue.ToString();
-            transferData.UpdateNumRovi((int)newValue);
+        if (isFloat) {
+            value = newValue.ToString("0.00");
         }
         else {
-            value = newValue.ToString("0.00");
-            transferData.UpdateSpeed(newValue);
+            value = newValue.ToString();
         }
         UpdateDisplay(value);
     }

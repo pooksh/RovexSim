@@ -10,7 +10,7 @@ public class RoviManager : MonoBehaviour, ITransporterManager
     [SerializeField] private bool enableDebugLogs;
     public int numRovi = 1;
     public float speed = 2.5f;
-    public string map = "UFMap";
+    public string map = "UFMap2";
     private List<GameObject> rovis;
     private InfoTransfer transferData;
     private bool initialized = false;
@@ -24,17 +24,20 @@ public class RoviManager : MonoBehaviour, ITransporterManager
         if (usingOptions) {
             transferData = (InfoTransfer)FindObjectOfType(typeof(InfoTransfer));
             if (transferData == null) {
-                Debug.LogError("Object with InfoTransfer component (which transfers information between scenes) cannot be found. Do you need to uncheck Using Options?");
+                Debug.LogError("Object with InfoTransfer component (which transfers information between scenes) cannot be found. Using defaults.");
             }
-
-            if (transferData.numRovis == 0 || transferData.speed == 0 || transferData.map == null) {
-                Debug.LogError("Some or all data is not valid from the scene transfer");
+            else {
+                if (transferData.GetNumRovi() > 0) {
+                    numRovi = transferData.GetNumRovi(); 
+                }
+                if (transferData.GetRoviSpeed() > 0) {
+                    speed = transferData.GetRoviSpeed();
+                }
+                if (transferData.GetMap() != null) {
+                    map = transferData.GetMap();
+                }
             }
-            numRovi = transferData.numRovis;
-            speed = transferData.speed;
-            map = transferData.map;
         }
-
         
         GameObject parent = GameObject.Find("RoviTransporters");
         if (parent == null) {
