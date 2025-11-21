@@ -85,7 +85,7 @@ public class TaskGeneratorCustomInspector : Editor
                 // generate random priority between 1-3
                 string priority = $"{UnityEngine.Random.Range(1,4)}";
                 // generate task description "Waypoint {origin} to Waypoint {destination} on map {mapName} with priority {priority}"
-                string description = $"From origin {wpManager.GetWaypointName(originIndex)} at {origin.position} to destination {wpManager.GetWaypointName(destinationIndex)} at {destination.position} on map {mapName}";
+                string description = $"From origin {origin.gameObject.name} at {origin.position} to destination {destination.gameObject.name} at {destination.position} on map {mapName}";
                 string dummy = "";
 
                 string line = $"{entryTime},{originString},{destinationString},{taskID},\"{description}\",{priority},{dummy},{dummy}\n"; 

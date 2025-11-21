@@ -27,7 +27,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0.28999996, y: -0.27173007, z: 0}
-  m_LocalScale: {x: 0.16048804, y: 0.16048802, z: 0.16048802}
+  m_LocalScale: {x: 0.25, y: 0.25, z: 0.25}
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 466458431455914832}
@@ -51,6 +51,10 @@ MonoBehaviour:
   stoppingDistance: 0.5
   rotationSpeed: 90
   enableDebugLogs: 1
+  enableRightSideFollowing: 1
+  rightSideOffset: 0.5
+  pathSmoothingDistance: 1.5
+  maxPathDeviation: 0.3
   enableRerouting: 1
   enableStuckDetection: 1
   rerouteCheckInterval: 1
@@ -58,6 +62,10 @@ MonoBehaviour:
   pathValidationInterval: 2
   maxRerouteAttempts: 3
   minimumRerouteDistance: 3
+  avoidanceRadius: 2
+  backingDistance: 1.5
+  backingSpeed: 1
+  stuckTogetherThreshold: 1.5
 --- !u!1 &8841033537278496575
 GameObject:
   m_ObjectHideFlags: 0

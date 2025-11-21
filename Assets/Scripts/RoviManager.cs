@@ -24,15 +24,20 @@ public class RoviManager : MonoBehaviour
         if (usingOptions) {
             transferData = (InfoTransfer)FindObjectOfType(typeof(InfoTransfer));
             if (transferData == null) {
-                Debug.LogError("Object with InfoTransfer component (which transfers information between scenes) cannot be found. Do you need to uncheck Using Options?");
+                Debug.LogWarning("Object with InfoTransfer component (which transfers information between scenes) cannot be found. Using defaults!");
+                usingOptions = false;
             }
 
             if (transferData.numRovis == 0 || transferData.speed == 0 || transferData.map == null) {
-                Debug.LogError("Some or all data is not valid from the scene transfer");
+                Debug.LogWarning("Some or all data is not valid from the scene transfer. Using defaults! ");
+                usingOptions = false;
             }
-            numRovi = transferData.numRovis;
-            speed = transferData.speed;
-            map = transferData.map;
+
+            if (usingOptions) {
+                numRovi = transferData.numRovis;
+                speed = transferData.speed;
+                map = transferData.map;
+            }
         }
 
         
@@ -51,7 +56,7 @@ public class RoviManager : MonoBehaviour
             obj.name = $"Rovi ({i})";
             
             RoviTransporter newRovi = obj.GetComponent<RoviTransporter>();
-            newRovi.InitializeTransporter(speed);
+            newRovi.InitializeTransporter(speed/2.0f);
             rovis.Add(obj);
         }
         initialized = true;
