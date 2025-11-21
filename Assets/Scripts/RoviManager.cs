@@ -24,7 +24,7 @@ public class RoviManager : MonoBehaviour, ITransporterManager
         if (usingOptions) {
             transferData = (InfoTransfer)FindObjectOfType(typeof(InfoTransfer));
             if (transferData == null) {
-                Debug.LogError("Object with InfoTransfer component (which transfers information between scenes) cannot be found. Using defaults.");
+                Debug.LogWarning("Object with InfoTransfer component (which transfers information between scenes) cannot be found. Using defaults.");
             }
             else {
                 if (transferData.GetNumRovi() > 0) {
@@ -54,7 +54,7 @@ public class RoviManager : MonoBehaviour, ITransporterManager
             obj.name = $"Rovi ({i})";
             
             RoviTransporter newRovi = obj.GetComponent<RoviTransporter>();
-            newRovi.InitializeTransporter(speed);
+            newRovi.InitializeTransporter(speed/2); // arbitrary 1/2
             rovis.Add(obj);
         }
         initialized = true;

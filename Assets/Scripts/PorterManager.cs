@@ -25,7 +25,7 @@ public class PorterManager : MonoBehaviour, ITransporterManager
         if (usingOptions) {
             transferData = (InfoTransfer)FindObjectOfType(typeof(InfoTransfer));
             if (transferData == null) {
-                Debug.LogError("Object with InfoTransfer component (which transfers information between scenes) cannot be found. Using defaults.");
+                Debug.LogWarning("Object with InfoTransfer component (which transfers information between scenes) cannot be found. Using defaults.");
             }
             else {
                 if (transferData.GetNumPorters() > 0) {
@@ -62,7 +62,7 @@ public class PorterManager : MonoBehaviour, ITransporterManager
                 Destroy(obj);
                 continue;
             }
-            newPorter.InitializeTransporter(speed);
+            newPorter.InitializeTransporter(speed/2); // arbitrary 1/2
             porters.Add(obj);
         }
         initialized = true;

@@ -30455,9 +30455,9 @@ GameObject:
   - component: {fileID: 1855602082}
   - component: {fileID: 1855602083}
   - component: {fileID: 1855602086}
+  - component: {fileID: 1855602087}
   - component: {fileID: 1855602084}
   - component: {fileID: 1855602085}
-  - component: {fileID: 1855602087}
   m_Layer: 0
   m_Name: Managers
   m_TagString: Untagged
@@ -30554,7 +30554,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d19810da1200e674689bda45557b9c5e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  usingOptions: 0
+  usingOptions: 1
   roviPrefab: {fileID: 648471182916351915, guid: 4d87be96c386b49488a897328333ba21, type: 3}
   enableDebugLogs: 1
   numRovi: 3
@@ -30572,11 +30572,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1b93be0b3b2389f4ba0770b4d696a7ae, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  usingOptions: 0
+  usingOptions: 1
   porterPrefab: {fileID: 2841076760461298133, guid: fddaa11ca2f717f4aabd56b78fd9d3b7, type: 3}
   enableDebugLogs: 1
   numPorters: 1
-  speed: 1.5
+  speed: 1
   map: UFMap
 --- !u!1 &1860320406
 GameObject:
