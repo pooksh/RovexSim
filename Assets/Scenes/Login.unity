@@ -751,6 +751,7 @@ MonoBehaviour:
   passwordInput: {fileID: 1810253135}
   messageText: {fileID: 1172047143}
   loginButton: {fileID: 706908720}
+  currentInput: 0
 --- !u!4 &458851619
 Transform:
   m_ObjectHideFlags: 0
@@ -872,7 +873,19 @@ MonoBehaviour:
       m_Calls: []
   m_OnSelect:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 458851618}
+        m_TargetAssemblyTypeName: LoginManager, Assembly-CSharp
+        m_MethodName: UsernameSelected
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
   m_OnDeselect:
     m_PersistentCalls:
       m_Calls: []
@@ -2226,7 +2239,19 @@ MonoBehaviour:
       m_Calls: []
   m_OnSelect:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 458851618}
+        m_TargetAssemblyTypeName: LoginManager, Assembly-CSharp
+        m_MethodName: PasswordSelected
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
   m_OnDeselect:
     m_PersistentCalls:
       m_Calls: []
