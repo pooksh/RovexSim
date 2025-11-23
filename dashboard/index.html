@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Live Multi-AGV Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+<header>
+  <h1>Multi-AGV Live Dashboard</h1>
+  <p class="subtitle">Simulation with live updates</p>
+</header>
+
+<!-- AGV Selector -->
+<div class="agv-selector">
+  <label for="agvCount">Number of AGVs:</label>
+  <select id="agvCount">
+    <option value="1">1 AGV</option>
+    <option value="2">2 AGVs</option>
+    <option value="3">3 AGVs</option>
+  </select>
+</div>
+
+<!-- Overall KPI Cards -->
+<div class="kpi-cards">
+  <div class="kpi"><h3>Avg Task Time</h3><p id="avgTime">–</p></div>
+  <div class="kpi"><h3>Tasks/Hour</h3><p id="tasksHour">–</p></div>
+  <div class="kpi"><h3>Distance</h3><p id="distance">–</p></div>
+  <div class="kpi"><h3>Labor Savings</h3><p id="labor">–</p></div>
+  <div class="kpi"><h3>Error Rate</h3><p id="errorRate">–</p></div>
+</div>
+
+<!-- Per-AGV Cards (moved above charts) -->
+<div id="agvCards" class="agv-cards-container"></div>
+
+<!-- Main 2x2 Charts -->
+<div class="charts-grid">
+  <div class="chart-container"><canvas id="avgTimeChart"></canvas></div>
+  <div class="chart-container"><canvas id="tasksHourChart"></canvas></div>
+  <div class="chart-container"><canvas id="distanceChart"></canvas></div>
+  <div class="chart-container"><canvas id="errorRateChart"></canvas></div>
+</div>
+
+<script src="dashboard.js"></script>
+</body>
+</html>

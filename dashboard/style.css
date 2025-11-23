@@ -1,0 +1,129 @@
+body {
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+  background: #121212;
+  color: #e0e0e0;
+  margin: 0;
+  padding: 20px;
+}
+
+header h1 {
+  text-align: center;
+  margin-bottom: 0;
+  color: #fff;
+  font-size: 2.5rem; /* bigger header */
+  font-weight: 700;
+}
+
+.subtitle {
+  text-align: center;
+  color: #bbb;
+  margin-bottom: 30px;
+  font-size: 1.2rem;
+}
+
+.agv-selector {
+  text-align: center;
+  margin-bottom: 25px;
+}
+
+.agv-selector select {
+  padding: 8px 12px;
+  font-size: 1.2rem; /* bigger dropdown */
+  border-radius: 8px;
+  border: none;
+  background: #1e1e1e;
+  color: #fff;
+  font-weight: 600;
+}
+
+/* Overall KPI Cards */
+.kpi-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  justify-content: center;
+  margin-bottom: 40px;
+}
+
+.kpi {
+  background: #1e1e1e;
+  padding: 20px;
+  border-radius: 16px;
+  flex: 1 1 140px;
+  max-width: 180px;
+  text-align: center;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.6);
+  transition: transform 0.2s;
+}
+
+.kpi:hover {
+  transform: translateY(-5px);
+}
+
+.kpi h3 {
+  margin: 0;
+  font-size: 1rem;
+  color: #aaa;
+  font-weight: 600;
+}
+
+.kpi p {
+  font-size: 2rem; /* bigger numbers */
+  margin-top: 8px;
+  color: #fff;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+/* Per-AGV Cards */
+.agv-cards-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
+  margin-bottom: 40px;
+}
+
+.agv-card {
+  background: #1e1e1e;
+  padding: 20px;
+  border-radius: 16px;
+  width: 320px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+  text-align: center;
+}
+
+.agv-card h3 {
+  font-size: 1.3rem;
+  margin-bottom: 10px;
+  color: #fff;
+  font-weight: 700;
+}
+
+.agv-card p {
+  font-size: 1.4rem;
+  margin: 6px 0;
+  font-weight: 600;
+  color: #ddd;
+}
+
+/* Main Charts */
+.charts-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-gap: 25px;
+  max-width: 1100px;
+  margin: 0 auto 50px auto;
+}
+
+.chart-container {
+  background: #1e1e1e;
+  padding: 35px;
+  border-radius: 16px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+  height: 520px;
+}
+
+/* Responsive */
+@media (max-width:1100px) { .charts-grid { grid-template-columns: 1fr; } }
+@media (max-width:700px) { .kpi-cards { flex-direction: column; align-items: center; } }
