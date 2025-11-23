@@ -30,9 +30,8 @@ namespace UnitySimBackend.Controllers
             _jwtKey = config["Jwt:Key"] ?? throw new Exception("JWT key not configured");
         }
 
-        /// <summary>
-        /// Registers a new user.
-        /// </summary>
+        
+        // Registers a new user.        
         [HttpPost("register")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -40,19 +39,20 @@ namespace UnitySimBackend.Controllers
         public IActionResult Register([FromBody] MyRegisterRequest request)
         {
             if (string.IsNullOrWhiteSpace(request.Username) || string.IsNullOrWhiteSpace(request.Password))
-                return BadRequest(new { message = "Username and password required." });
+                return BadRequest(new { message = "Username and password required." }); // validate input
 
-            var hashedPassword = BCrypt.Net.BCrypt.HashPassword(request.Password);
+            var hashedPassword = BCrypt.Net.BCrypt.HashPassword(request.Password); // encrypt password
 
-            using var conn = new SqlConnection(_connectionString);
-            conn.Open();
+            using var conn = new SqlConnection(_connectionString); // set DB connection string
+            conn.Open(); // connect to DB
 
-            var checkCmd = new SqlCommand("SELECT COUNT(*) FROM Users WHERE Username=@u", conn);
+            var checkCmd = new SqlCommand("SELECT COUNT(*) FROM Users WHERE Username=@u", conn); // validate user is new
             checkCmd.Parameters.AddWithValue("@u", request.Username);
             var exists = (int)checkCmd.ExecuteScalar() > 0;
             if (exists)
                 return Conflict(new { message = "Username already exists." });
 
+            // setup insert command
             using var cmd = new SqlCommand(@"
                 INSERT INTO Users (Username, Password, FirstName, LastName, Permission)
                 VALUES (@u, @p, @f, @l, @perm)", conn);
@@ -64,12 +64,12 @@ namespace UnitySimBackend.Controllers
             cmd.Parameters.AddWithValue("@perm", request.Permission ?? "User");
             cmd.ExecuteNonQuery();
 
-            return Ok(new { message = "User registered successfully." });
+            return Ok(new { message = "User registered successfully." }); // success
         }
 
-        /// <summary>
-        /// Logs in a user and returns JWT token.
-        /// </summary>
+        
+        // Logs in a user and returns userdata and JWT token for subsequent access.
+        
         [HttpPost("login")]
         [ProducesResponseType(typeof(MyUserResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -78,7 +78,7 @@ namespace UnitySimBackend.Controllers
             using var conn = new SqlConnection(_connectionString);
             conn.Open();
 
-            using var cmd = new SqlCommand("SELECT Id, Password, FirstName, LastName, Permission FROM Users WHERE Username=@u", conn);
+            using var cmd = new SqlCommand("SELECT Id, Password, FirstName, LastName, Permission FROM Users WHERE Username=@u", conn); // fetch current user
             cmd.Parameters.AddWithValue("@u", request.Username);
 
             using var reader = cmd.ExecuteReader();
@@ -87,7 +87,7 @@ namespace UnitySimBackend.Controllers
                 return Unauthorized(new { message = "Invalid username or password" });
 
             var storedHash = reader.GetString(1);
-            if (!BCrypt.Net.BCrypt.Verify(request.Password, storedHash))
+            if (!BCrypt.Net.BCrypt.Verify(request.Password, storedHash)) // compare password entered with encrypted value in DB
                 return Unauthorized(new { message = "Invalid username or password" });
 
             var id = reader.GetInt32(0);
