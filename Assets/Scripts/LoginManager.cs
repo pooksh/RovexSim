@@ -16,23 +16,23 @@ public class LoginManager : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Tab) && Input.GetKey(KeyCode.LeftShift))
+        if (Input.GetKeyDown(KeyCode.Tab) && Input.GetKey(KeyCode.LeftShift)) // detect if shift tab is pressed, and go to previous input field
         {
             currentInput--;
             if (currentInput < 0) currentInput = 1;
             SelectInputField();
         }
 
-        if (Input.GetKeyDown(KeyCode.Tab))
+        if (Input.GetKeyDown(KeyCode.Tab)) // detect is tab is pressed and go to next input field
         {
             currentInput++;
             if (currentInput > 1) currentInput = 0;
             SelectInputField();
         }
-        if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter))
+        if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter)) // detect if return/enter is pressed to submit input after validation
         {
 
-            if (usernameInput.text != "" && passwordInput.text != "")
+            if (usernameInput.text != "" && passwordInput.text != "") // validate that user and password are filled out before accepting submit
             {
                 OnLoginClicked();
             }               
@@ -53,8 +53,8 @@ public class LoginManager : MonoBehaviour
         }
     }
 
-    public void UsernameSelected() => currentInput = 0;    
-    public void PasswordSelected() => currentInput = 1;
+    public void UsernameSelected() => currentInput = 0; // username = 0   
+    public void PasswordSelected() => currentInput = 1; // password = 1
     
 
     private string apiUrl = "http://localhost:5000/api/Auth/login"; // backend API URL
