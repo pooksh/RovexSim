@@ -8,16 +8,61 @@ using System.Collections;
 public class LoginManager : MonoBehaviour
 {
     [Header("UI References")]
-    public TMP_InputField usernameInput;
-    public TMP_InputField passwordInput;
-    public TMP_Text messageText;
-    public Button loginButton;
+    public TMP_InputField usernameInput; // username 0
+    public TMP_InputField passwordInput; // password 1
+    public TMP_Text messageText; // login message
+    public Button loginButton; 
+    public int currentInput = 0;
 
-    private string apiUrl = "http://localhost:5000/api/Auth/login"; // replace with your backend endpoint
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Tab) && Input.GetKey(KeyCode.LeftShift))
+        {
+            currentInput--;
+            if (currentInput < 0) currentInput = 1;
+            SelectInputField();
+        }
+
+        if (Input.GetKeyDown(KeyCode.Tab))
+        {
+            currentInput++;
+            if (currentInput > 1) currentInput = 0;
+            SelectInputField();
+        }
+        if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter))
+        {
+
+            if (usernameInput.text != "" && passwordInput.text != "")
+            {
+                OnLoginClicked();
+            }               
+            
+        }
+
+        void SelectInputField()
+        {
+            switch (currentInput)
+            {
+                case 0:
+                    usernameInput.Select();
+                    break;
+                case 1:
+                    passwordInput.Select();
+                    break;                
+            }
+        }
+    }
+
+    public void UsernameSelected() => currentInput = 0;    
+    public void PasswordSelected() => currentInput = 1;
+    
+
+    private string apiUrl = "http://localhost:5000/api/Auth/login"; // backend API URL
 
     void Start()
     {
-        loginButton.onClick.AddListener(OnLoginClicked);
+        loginButton.onClick.AddListener(OnLoginClicked); // login button action
+        usernameInput.Select();
     }
 
     void OnLoginClicked()
@@ -34,13 +79,13 @@ public class LoginManager : MonoBehaviour
         StartCoroutine(LoginRoutine(username, password));
     }
 
-    IEnumerator LoginRoutine(string username, string password)
+    IEnumerator LoginRoutine(string username, string password) // send API POST to /api/auth/login
     {
         messageText.text = "Logging in...";
 
         string jsonBody = JsonUtility.ToJson(new LoginRequest(username, password));
 
-        UnityWebRequest request = new UnityWebRequest(apiUrl, "POST");
+        UnityWebRequest request = new UnityWebRequest(apiUrl, "POST"); 
         byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(jsonBody);
         request.uploadHandler = new UploadHandlerRaw(bodyRaw);
         request.downloadHandler = new DownloadHandlerBuffer();
@@ -48,15 +93,18 @@ public class LoginManager : MonoBehaviour
 
         yield return request.SendWebRequest();
 
-        if (request.result == UnityWebRequest.Result.Success)
+        if (request.result == UnityWebRequest.Result.Success) // if we get a successful response, store response info
         {
             var response = JsonUtility.FromJson<LoginResponse>(request.downloadHandler.text);
             if (!string.IsNullOrEmpty(response.token))
             {
                 messageText.text = "Login successful!";
 
-                // Store token
+                // Store name, access token, and permission level
+                PlayerPrefs.SetString("FirstName", response.firstName);
+                PlayerPrefs.SetString("LastName", response.lastName);
                 PlayerPrefs.SetString("AuthToken", response.token);
+                PlayerPrefs.SetString("Permission", response.permission);
                 PlayerPrefs.Save();
 
                 // Load the next scene
@@ -77,8 +125,8 @@ public class LoginManager : MonoBehaviour
     [System.Serializable]
     public class LoginRequest
     {
-        public string username;
-        public string password;
+        public string username; // username
+        public string password; // password will be encrypted by the backend and stored in the DB
 
         public LoginRequest(string username, string password)
         {
@@ -90,11 +138,11 @@ public class LoginManager : MonoBehaviour
     [System.Serializable]    
     public class LoginResponse
     {
-        public int id;
-        public string firstName;
-        public string lastName;
-        public string permission;
-        public string token;
+        public int id; // returns ID in DB
+        public string firstName; // returns first name of user
+        public string lastName; // returns last name of user
+        public string permission; // use for rights delegation
+        public string token; // use for subsequent API calls 
     }
 
 }
