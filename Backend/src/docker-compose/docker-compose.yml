@@ -1,12 +1,10 @@
-version: "3.9"
-
 services:
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2022-latest
     container_name: sim-sql
     restart: always
     environment:
-      SA_PASSWORD: "YourStrong!Pass123"
+      SA_PASSWORD: "yDiFLbzB6W9E72lD7y"
       ACCEPT_EULA: "Y"
     ports:
       - "1433:1433"
@@ -25,8 +23,8 @@ services:
       - "5000:5000"
     environment:
       ASPNETCORE_ENVIRONMENT: "Development"
-      Jwt__Key: "this_is_a_super_secret_key_change_me"
-      ConnectionStrings__SimulationDB: "Server=sqlserver;Database=SimDB;User Id=sa;Password=YourStrong!Pass123;TrustServerCertificate=true;"
+      Jwt__Key: "this_is_a_super_secret_key_change_me" # change in production
+      ConnectionStrings__SimulationDB: "Server=sqlserver;Database=SimDB;User Id=sa;Password=yDiFLbzB6W9E72lD7y;TrustServerCertificate=true;" # change password for production 
       ASPNETCORE_URLS: ENV ASPNETCORE_URLS=http://+:5000;http://0.0.0.0:5000
 
     volumes:
