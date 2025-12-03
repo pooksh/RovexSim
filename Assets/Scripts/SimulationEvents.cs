@@ -42,6 +42,7 @@ namespace SimulationEvents {
         }
 
         public TimeOfDay EntryTime => entryTime; // public getter
+        public string AssociatedMap => associatedMap;
 
     }
 

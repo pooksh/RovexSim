@@ -14,8 +14,6 @@ public class RoviTransporter : Transporter {
     [Header("Hospital Corridor Behavior")]
     [SerializeField] private bool enableRightSideFollowing = true;  // stick to right side of corridors
     [SerializeField] private float rightSideOffset = 0.5f;          // distance to offset from center to right side
-    [SerializeField] private float pathSmoothingDistance = 1.5f;    // distance to look ahead for path smoothing
-    [SerializeField] private float maxPathDeviation = 0.3f;         // maximum deviation from smoothed path
     
     [Header("Advanced Routing")]
     [SerializeField] private bool enableRerouting = true;

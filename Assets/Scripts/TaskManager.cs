@@ -31,12 +31,8 @@ public class TaskManager : MonoBehaviour
 
     LinkedListNode<GameObject> tempNode;
 
-    // Modular transporter manager support
-    [SerializeField] private RoviManager roviManager;
-    [SerializeField] private PorterManager porterManager;
-    [SerializeField] private bool useRoviManager = true;
-    [SerializeField] private bool usePorterManager = false;
-    [SerializeField] private bool useTagFallback = false; // fallback to finding all transporters by tag
+    private RoviManager rovimgr;
+    private bool usingRoviManager = true;
 
     string map;
     TimeOfDay entry;
@@ -75,72 +71,15 @@ public class TaskManager : MonoBehaviour
                 Debug.LogError("No map/tasklist assigned on task manager or task generator");
             }
         }
-
-        // Collect transporters from all enabled managers
-        transportersMaster = new List<GameObject>();
-        
-        // Try to find managers if not assigned
-        if (useRoviManager && roviManager == null) {
-            roviManager = GetComponent<RoviManager>();
-            if (roviManager == null) {
-                roviManager = FindObjectOfType<RoviManager>();
+        if (usingRoviManager) {
+            rovimgr = GetComponent<RoviManager>();
+            if (rovimgr == null) {
+                Debug.LogError("Add RoviManager to the scene or uncheck using it.");
             }
+            transportersMaster = rovimgr.GetTransporters();
         }
-        
-        if (usePorterManager && porterManager == null) {
-            porterManager = GetComponent<PorterManager>();
-            if (porterManager == null) {
-                porterManager = FindObjectOfType<PorterManager>();
-            }
-        }
-
-        // Collect transporters from RoviManager
-        if (useRoviManager && roviManager != null) {
-            if (roviManager.IsInitialized()) {
-                List<GameObject> rovis = roviManager.GetTransporters();
-                if (rovis != null) {
-                    transportersMaster.AddRange(rovis);
-                    if (enableDebugLogs) {
-                        Debug.Log($"TaskManager: Added {rovis.Count} rovis from RoviManager");
-                    }
-                }
-            } else {
-                Debug.LogWarning("RoviManager is not initialized yet. Transporters may not be available.");
-            }
-        }
-
-        // Collect transporters from PorterManager
-        if (usePorterManager && porterManager != null) {
-            if (porterManager.IsInitialized()) {
-                List<GameObject> porters = porterManager.GetTransporters();
-                if (porters != null) {
-                    transportersMaster.AddRange(porters);
-                    if (enableDebugLogs) {
-                        Debug.Log($"TaskManager: Added {porters.Count} porters from PorterManager");
-                    }
-                }
-            } else {
-                Debug.LogWarning("PorterManager is not initialized yet. Transporters may not be available.");
-            }
-        }
-
-        // Fallback: find all transporters by tag if no managers are used or if enabled
-        if (transportersMaster.Count == 0 || useTagFallback) {
-            GameObject[] taggedTransporters = GameObject.FindGameObjectsWithTag("Transporter");
-            foreach (GameObject obj in taggedTransporters) {
-                if (!transportersMaster.Contains(obj)) {
-                    transportersMaster.Add(obj);
-                }
-            }
-            if (enableDebugLogs && taggedTransporters.Length > 0) {
-                Debug.Log($"TaskManager: Added {taggedTransporters.Length} transporters found by tag");
-            }
-        }
-
-        if (transportersMaster.Count == 0) {
-            Debug.LogWarning("TaskManager: No transporters found! Make sure at least one transporter manager is enabled or transporters are tagged correctly.");
-        } else if (enableDebugLogs) {
-            Debug.Log($"TaskManager: Total transporters available: {transportersMaster.Count}");
+        else {
+            transportersMaster = new List<GameObject>(GameObject.FindGameObjectsWithTag("Transporter"));
         }
 
         assignableTransporters = new LinkedList<GameObject>();
