@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 
-public class RoviManager : MonoBehaviour
+public class RoviManager : MonoBehaviour, ITransporterManager
 {
     [SerializeField] private bool usingOptions = true;
     [SerializeField] private GameObject roviPrefab;
     [SerializeField] private bool enableDebugLogs;
     public int numRovi = 1;
     public float speed = 2.5f;
-    public string map = "UFMap";
+    public string map = "UFMap2";
     private List<GameObject> rovis;
     private InfoTransfer transferData;
     private bool initialized = false;
@@ -24,22 +24,20 @@ public class RoviManager : MonoBehaviour
         if (usingOptions) {
             transferData = (InfoTransfer)FindObjectOfType(typeof(InfoTransfer));
             if (transferData == null) {
-                Debug.LogWarning("Object with InfoTransfer component (which transfers information between scenes) cannot be found. Using defaults!");
-                usingOptions = false;
+                Debug.LogWarning("Object with InfoTransfer component (which transfers information between scenes) cannot be found. Using defaults.");
             }
-
-            if (transferData.numRovis == 0 || transferData.speed == 0 || transferData.map == null) {
-                Debug.LogWarning("Some or all data is not valid from the scene transfer. Using defaults! ");
-                usingOptions = false;
-            }
-
-            if (usingOptions) {
-                numRovi = transferData.numRovis;
-                speed = transferData.speed;
-                map = transferData.map;
+            else {
+                if (transferData.GetNumRovi() > 0) {
+                    numRovi = transferData.GetNumRovi(); 
+                }
+                if (transferData.GetRoviSpeed() > 0) {
+                    speed = transferData.GetRoviSpeed();
+                }
+                if (transferData.GetMap() != null) {
+                    map = transferData.GetMap();
+                }
             }
         }
-
         
         GameObject parent = GameObject.Find("RoviTransporters");
         if (parent == null) {
@@ -63,7 +61,6 @@ public class RoviManager : MonoBehaviour
     }
 
     public List<GameObject> GetTransporters() {
-
         if (initialized) {
             return rovis;
         }
@@ -71,6 +68,10 @@ public class RoviManager : MonoBehaviour
             Debug.LogError($"Rovis failed to initialize.");
             return null;
         }
+    }
+
+    public bool IsInitialized() {
+        return initialized;
     }
 
 }

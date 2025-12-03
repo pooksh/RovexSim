@@ -1,44 +1,62 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 public class InfoTransfer : MonoBehaviour
 {
 
-    public int numRovis = 0;
-    public float speed = 0;
-    public string map;
+    private int numRovi = 0;
+    private int numPorters = 0;
+    private float speed = 0;
+    private string map;
     [SerializeField] private bool enableDebugLogs = false;
 
     void Awake() {
         DontDestroyOnLoad(this.gameObject);
     }
 
-    public void UpdateNumRovi(int n) {
-        if (SceneManager.GetActiveScene().name == "OptionsScene") {
-            numRovis = n;
-            if (enableDebugLogs) {
-                Debug.Log($"Number of Rovis currently is: {numRovis}");
-            }
+    public void PassNumRovi(int n) {
+        numRovi = n;
+        if (enableDebugLogs) {
+            Debug.Log($"Number of Rovis currently is: {numRovi}");
         }
     }
 
-    public void UpdateSpeed(float s) {
-        if (SceneManager.GetActiveScene().name == "OptionsScene") {
-            speed = s;
-            if (enableDebugLogs) {
-                Debug.Log($"Speed currently is: {speed}");
-            }
+    public void PassNumPorters(int n) {
+        numPorters = n;
+        if (enableDebugLogs) {
+            Debug.Log($"Number of Human Transporters currently is: {numPorters}");
+        }
+    }
+    
+    public void PassRoviSpeed(float s) {
+        speed = s;
+        if (enableDebugLogs) {
+            Debug.Log($"Speed currently is: {speed}");
         }
     }
 
-    public void UpdateMap(string m) {
-        if (SceneManager.GetActiveScene().name == "OptionsScene") {
-            map = m;
-            if (enableDebugLogs) {
-                Debug.Log($"Map currently is: {map}");
-            }
+    public void PassMap(string m) {
+        map = m;
+        if (enableDebugLogs) {
+            Debug.Log($"Map currently is: {map}");
         }
     }
+
+    public string GetMap() {
+        return map;
+    }
+
+    public float GetRoviSpeed() {
+        return speed;
+    }
+
+     public int GetNumRovi() {
+        return numRovi;
+     }
+
+     public int GetNumPorters() {
+        return numPorters;
+     }
+
 }

@@ -1,3 +1,0 @@
-mapname
-UFMap3
-entryTime,origin,destination,id,description,priority,estimatedDuration,loadingTime
