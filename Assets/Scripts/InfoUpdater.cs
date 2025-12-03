@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using System;
+using UnityEngine.UI; 
 
 public class InfoUpdater : MonoBehaviour
 {
@@ -12,9 +13,10 @@ public class InfoUpdater : MonoBehaviour
     private delegate void ChosenMethod(float var);
     ChosenMethod currentMethod;
     private DisplayValue display;
+    private Slider slider;
 
     void Start() {
-
+        slider = GetComponent<Slider>();
         display = GetComponent<DisplayValue>();
         if (display == null) {
             Debug.LogError("Add a display value component to this slider object.");
@@ -30,6 +32,8 @@ public class InfoUpdater : MonoBehaviour
             case OptionVariables.NumPorters: currentMethod = UpdateNumPorters; break;
             case OptionVariables.RoviSpeed: currentMethod = UpdateRoviSpeed; break;
         }
+
+        OnValueChanged(slider.minValue);
     }    
 
     public void OnValueChanged(float newValue) {
